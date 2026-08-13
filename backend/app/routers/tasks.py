@@ -2,7 +2,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.models import Attempt
+from app.models import Attempt, Learner
 from app.schemas import TaskOut, SubmitRequest, SubmitOut
 from app.services.grader import grade_python
 from app.services.scheduler import due_attempts
@@ -25,14 +25,23 @@ def get_due_tasks(learner_id: int, db: Session = Depends(get_db)):
 
 @router.post("/{task_id}/submit", response_model=SubmitOut)
 def submit_task(task_id: int, learner_id: int, payload: SubmitRequest, db: Session = Depends(get_db)):
+    learner = db.get(Learner, learner_id)
+    if not learner:
+        raise HTTPException(404, "Learner not found")
+
     attempt = (
         db.query(Attempt)
         .filter_by(task_id=task_id, learner_id=learner_id)
-        .filter(Attempt.completed_at.is_(None))
         .first()
     )
     if not attempt:
-        raise HTTPException(404, "Due attempt not found")
+        raise HTTPException(404, "Attempt not found")
+
+    if attempt.completed_at is not None:
+        raise HTTPException(409, "Attempt has already been completed")
+
+    if attempt.scheduled_for > datetime.utcnow():
+        raise HTTPException(409, "Attempt is not yet available")
 
     score, feedback = grade_python(payload.code, attempt.task.grading_spec)
     attempt.submitted_code = payload.code

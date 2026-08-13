@@ -1,4 +1,5 @@
 import httpx
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.config import settings
@@ -13,7 +14,6 @@ Use the same tutoring policy for every participant.
 Give concise conceptual guidance and small hints.
 Do not reveal hidden tests.
 Do not invent tasks.
-Do not provide a complete final solution unless the locked protocol explicitly permits it.
 Do not personalize the experimental treatment.
 """
 
@@ -24,8 +24,24 @@ def chat(payload: AIChatRequest, db: Session = Depends(get_db)):
         raise HTTPException(404, "Attempt not found")
 
     learner = db.get(Learner, attempt.learner_id)
-    if not learner or learner.condition != "controlled_ai":
+    if not learner:
+        raise HTTPException(404, "Learner not found")
+
+    # AI is only available to the controlled-AI condition.
+    if learner.condition != "controlled_ai":
         raise HTTPException(403, "AI assistance is not available")
+
+    # AI is only available during the Supported learning phase.
+    if attempt.task.type != "supported":
+        raise HTTPException(403, "AI assistance is not available during this phase")
+
+    # The attempt must be currently available.
+    if attempt.scheduled_for > datetime.utcnow():
+        raise HTTPException(409, "Attempt is not yet available")
+
+    # The attempt must not already be completed.
+    if attempt.completed_at is not None:
+        raise HTTPException(409, "Attempt has already been completed")
 
     count = db.query(AIInteraction).filter_by(attempt_id=attempt.id).count()
     if count >= settings.ai_interaction_cap:

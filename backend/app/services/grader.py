@@ -1,3 +1,19 @@
+"""Python grading service.
+
+Runs submitted code in a subprocess with hidden tests.
+
+SECURITY LIMITATION
+-------------------
+The current grader uses `python -I` in a temporary directory. This provides
+basic isolation (ignores PYTHONPATH, runs in a fresh temp dir) but does NOT
+provide true network or OS-level sandboxing. Submitted code can still make
+network calls, access the filesystem, or consume resources.
+
+Current grader is acceptable only for a controlled/internal technical pilot
+with trusted participants. Real untrusted/public code execution requires
+stronger OS/container/VM sandboxing.
+"""
+
 import json
 import subprocess
 import sys
