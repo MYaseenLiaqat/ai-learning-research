@@ -1,6 +1,17 @@
 """Python grading service.
 
+Grader version for research traceability.
+
 Runs submitted code in a subprocess with hidden tests.
+
+Two grading modes:
+
+1. `expression` (default): imports the submission and evaluates a test
+   expression against it. Used for function-based tasks.
+
+2. `exec_result`: executes the submission as a script in a fresh namespace
+   with injected input variables, then reads a configured result variable.
+   Used for the Loops pilot's provided-input + `result` contract.
 
 SECURITY LIMITATION
 -------------------
@@ -20,9 +31,13 @@ import sys
 import tempfile
 from pathlib import Path
 
+GRADER_VERSION = "0.1.0"
+
 TIMEOUT_SECONDS = 4
 
+
 def grade_python(code: str, grading_spec: dict):
+    mode = grading_spec.get("mode", "expression")
     tests = grading_spec.get("tests", [])
     if not tests:
         return 0.0, ["No tests configured."]
@@ -35,22 +50,13 @@ def grade_python(code: str, grading_spec: dict):
         submission.write_text(code, encoding="utf-8")
 
         for i, test in enumerate(tests, 1):
-            harness = f'''
-import json
-import sys
-from pathlib import Path
+            if mode == "exec_result":
+                harness = _build_exec_result_harness(
+                    test, grading_spec.get("result_var", "result")
+                )
+            else:
+                harness = _build_expression_harness(test)
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from submission import *
-
-try:
-    result = ({test["expression"]})
-    expected = {test["expected"]!r}
-    print(json.dumps({{"ok": result == expected}}))
-except Exception as exc:
-    print(json.dumps({{"ok": False, "error": str(exc)}}))
-'''
             hp = Path(td) / f"harness_{i}.py"
             hp.write_text(harness, encoding="utf-8")
             try:
@@ -74,3 +80,45 @@ except Exception as exc:
                 feedback.append(f"Test {i}: execution error ({exc})")
 
     return round(passed / len(tests), 4), feedback
+
+
+def _build_expression_harness(test: dict) -> str:
+    return f'''
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from submission import *
+
+try:
+    result = ({test["expression"]})
+    expected = {test["expected"]!r}
+    print(json.dumps({{"ok": result == expected}}))
+except Exception as exc:
+    print(json.dumps({{"ok": False, "error": str(exc)}}))
+'''
+
+
+def _build_exec_result_harness(test: dict, result_var: str) -> str:
+    inputs = test.get("inputs", {})
+    expected = test["expected"]
+    input_assignments = "\n".join(
+        f"namespace[{k!r}] = {v!r}" for k, v in inputs.items()
+    )
+    return f'''
+import json
+
+namespace = {{}}
+{input_assignments}
+
+exec(compile(open("submission.py", encoding="utf-8").read(), "submission.py", "exec"), namespace)
+
+try:
+    result = namespace[{result_var!r}]
+    expected = {expected!r}
+    print(json.dumps({{"ok": result == expected}}))
+except Exception as exc:
+    print(json.dumps({{"ok": False, "error": str(exc)}}))
+'''

@@ -91,12 +91,13 @@ def make_learner(db_session):
 
 @pytest.fixture()
 def make_attempt(db_session):
-    def _make_attempt(learner, task, scheduled_for=None, completed_at=None):
+    def _make_attempt(learner, task, scheduled_for=None, completed_at=None, started_at=None):
         a = Attempt(
             learner_id=learner.id,
             task_id=task.id,
             scheduled_for=scheduled_for or datetime.utcnow(),
             completed_at=completed_at,
+            started_at=started_at,
         )
         db_session.add(a)
         db_session.commit()

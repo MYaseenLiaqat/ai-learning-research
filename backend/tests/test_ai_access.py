@@ -28,7 +28,7 @@ def test_ai_participant_can_use_ai_on_supported_attempt(
     _configure_llm(monkeypatch)
     learner = make_learner(condition="controlled_ai")
     task = make_task("supported")
-    attempt = make_attempt(learner, task)
+    attempt = make_attempt(learner, task, started_at=datetime.utcnow())
 
     with _mock_llm_response():
         resp = client.post(
@@ -165,7 +165,7 @@ def test_ai_request_cap_is_enforced(
     _configure_llm(monkeypatch)
     learner = make_learner(condition="controlled_ai")
     task = make_task("supported")
-    attempt = make_attempt(learner, task)
+    attempt = make_attempt(learner, task, started_at=datetime.utcnow())
 
     for _ in range(settings.ai_interaction_cap):
         with _mock_llm_response():
@@ -188,7 +188,7 @@ def test_ai_interaction_is_logged(
     _configure_llm(monkeypatch)
     learner = make_learner(condition="controlled_ai")
     task = make_task("supported")
-    attempt = make_attempt(learner, task)
+    attempt = make_attempt(learner, task, started_at=datetime.utcnow())
 
     with _mock_llm_response():
         resp = client.post(

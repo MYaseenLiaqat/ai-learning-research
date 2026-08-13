@@ -35,3 +35,9 @@ class AIChatOut(BaseModel):
     sequence_num: int
     response: str
     remaining_interactions: int
+
+class SessionStartOut(BaseModel):
+    module: dict
+    module_version: str
+    started_at: datetime | None
+    expires_at: datetime | None

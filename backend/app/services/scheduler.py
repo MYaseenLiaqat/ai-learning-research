@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
+from app.config import settings
 from app.models import Learner, Task, Attempt
 
 ALLOWED = {
-    "immediate_only": {"immediate"},
-    "immediate_delayed": {"immediate", "delayed", "criterion"},
-    "full": {"immediate", "delayed", "transfer", "criterion"},
+    "immediate_only": {"supported", "immediate"},
+    "immediate_delayed": {"supported", "immediate", "delayed", "criterion"},
+    "full": {"supported", "immediate", "delayed", "transfer", "criterion"},
 }
 
 def seed_attempts(db: Session, learner: Learner):
@@ -33,3 +34,29 @@ def due_attempts(db: Session, learner_id: int):
         )
         .all()
     )
+
+def is_supported_completed_or_expired(db: Session, learner_id: int) -> bool:
+    """Whether the Immediate assessment is unlocked.
+
+    Immediate unlocks when the Supported attempt is completed OR its
+    20-minute window has expired. It is NOT unlocked merely because its
+    scheduled offset is zero.
+    """
+    supported = (
+        db.query(Attempt)
+        .join(Task)
+        .filter(
+            Attempt.learner_id == learner_id,
+            Task.type == "supported",
+        )
+        .first()
+    )
+    if not supported:
+        return False
+    if supported.completed_at is not None:
+        return True
+    if supported.started_at is not None:
+        expiry = supported.started_at + timedelta(minutes=settings.supported_phase_minutes)
+        if datetime.utcnow() > expiry:
+            return True
+    return False

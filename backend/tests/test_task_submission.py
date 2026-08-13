@@ -5,8 +5,9 @@ def test_valid_due_attempt_can_be_submitted_and_graded(
     client, db_session, make_learner, make_task, make_attempt
 ):
     learner = make_learner()
-    task = make_task("immediate")
-    attempt = make_attempt(learner, task)
+    task = make_task("supported")
+    # An active Supported session is required for a valid submission.
+    attempt = make_attempt(learner, task, started_at=datetime.utcnow())
 
     resp = client.post(
         f"/tasks/{task.id}/submit",

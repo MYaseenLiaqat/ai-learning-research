@@ -1,5 +1,5 @@
 import httpx
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.config import settings
@@ -8,6 +8,8 @@ from app.models import Attempt, AIInteraction, Learner
 from app.schemas import AIChatRequest, AIChatOut
 
 router = APIRouter()
+
+SYSTEM_PROMPT_VERSION = "0.1.0"
 
 SYSTEM_PROMPT = """You are the controlled AI tutor in a research experiment.
 Use the same tutoring policy for every participant.
@@ -42,6 +44,15 @@ def chat(payload: AIChatRequest, db: Session = Depends(get_db)):
     # The attempt must not already be completed.
     if attempt.completed_at is not None:
         raise HTTPException(409, "Attempt has already been completed")
+
+    # The Supported session must have been explicitly started.
+    if attempt.started_at is None:
+        raise HTTPException(409, "Supported session has not started")
+
+    # Enforce Supported-session time limit.
+    expiry = attempt.started_at + timedelta(minutes=settings.supported_phase_minutes)
+    if datetime.utcnow() > expiry:
+        raise HTTPException(409, "Supported session has expired")
 
     count = db.query(AIInteraction).filter_by(attempt_id=attempt.id).count()
     if count >= settings.ai_interaction_cap:

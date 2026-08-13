@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.db import init_db
-from app.routers import health, learners, tasks, ai
+from app.routers import health, learners, tasks, ai, learning
 
 app = FastAPI(
     title="AI Learning Measurement Platform",
@@ -15,3 +15,4 @@ app.include_router(health.router)
 app.include_router(learners.router, prefix="/learners", tags=["learners"])
 app.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
 app.include_router(ai.router, prefix="/ai", tags=["controlled-ai"])
+app.include_router(learning.router, prefix="/learning", tags=["learning"])

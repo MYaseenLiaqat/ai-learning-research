@@ -27,6 +27,7 @@ class Task(Base):
     prompt_text: Mapped[str] = mapped_column(Text)
     grading_spec: Mapped[dict] = mapped_column(JSON)
     scheduled_offset_days: Mapped[int] = mapped_column(Integer, default=0)
+    version: Mapped[str | None] = mapped_column(String(30), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     concept = relationship("Concept", back_populates="tasks")
 
@@ -39,6 +40,8 @@ class Attempt(Base):
     score: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_interaction_log: Mapped[list | None] = mapped_column(JSON, nullable=True)
     scheduled_for: Mapped[datetime] = mapped_column(DateTime)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    module_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
     graded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     learner = relationship("Learner", back_populates="attempts")
