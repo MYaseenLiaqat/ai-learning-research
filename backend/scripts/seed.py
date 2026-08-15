@@ -1,33 +1,31 @@
-from app.db import SessionLocal, init_db
 from app.models import Concept, Task
 
-TASK_VERSION = "0.1.0"
+TASK_VERSION = "0.2.0"
 
-init_db()
-db = SessionLocal()
 
-if db.query(Concept).count() == 0:
-    db.add_all([
-        Concept(name="Loops", order=1),
-    ])
-    db.commit()
+def seed(db):
+    if db.query(Concept).count() == 0:
+        db.add_all([
+            Concept(name="Loops", order=1),
+        ])
+        db.commit()
 
-concepts = {c.name: c for c in db.query(Concept).all()}
+    concepts = {c.name: c for c in db.query(Concept).all()}
 
-if db.query(Task).count() == 0:
-    # Loops pilot tasks per research/loops_learning_module_v0.2.md
-    # All tasks use the provided-input + `result` variable contract.
-    db.add_all([
+    if db.query(Task).count() == 0:
+        # Loops pilot tasks per research/loops_learning_module_v0.2.md
+        # All tasks use the provided-input + `result` variable contract.
+        db.add_all([
         Task(
             concept_id=concepts["Loops"].id,
             type="supported",
             version=TASK_VERSION,
             prompt_text=(
-                "A weather station recorded these temperatures:\n"
-                "temperatures = [28, 32, 35, 29, 31, 27]\n"
-                "Write a Python program that counts how many temperatures are "
+                "The platform already provides a variable named `temperatures` containing:\n"
+                "[28, 32, 35, 29, 31, 27]\n\n"
+                "Do not redefine `temperatures`.\n\n"
+                "Write Python code that sets `result` to the number of temperatures "
                 "strictly greater than 30.\n"
-                "Assign your answer to a variable named `result`.\n"
                 "Expected result: 3"
             ),
             grading_spec={
@@ -49,11 +47,11 @@ if db.query(Task).count() == 0:
             type="immediate",
             version=TASK_VERSION,
             prompt_text=(
-                "Given:\n"
-                "scores = [42, 67, 81, 39, 55, 48, 72]\n"
-                "Write a Python program that counts how many scores are greater "
-                "than or equal to 50.\n"
-                "Assign your answer to a variable named `result`.\n"
+                "The platform already provides a variable named `scores` containing:\n"
+                "[42, 67, 81, 39, 55, 48, 72]\n\n"
+                "Do not redefine `scores`.\n\n"
+                "Write Python code that sets `result` to the number of scores that are "
+                "greater than or equal to 50.\n"
                 "Expected result: 4"
             ),
             grading_spec={
@@ -75,11 +73,11 @@ if db.query(Task).count() == 0:
             type="delayed",
             version=TASK_VERSION,
             prompt_text=(
-                "Given:\n"
-                "prices = [450, 1200, 850, 1700, 999, 1500]\n"
-                "Write a Python program that returns the total price of products "
-                "costing strictly more than 1000.\n"
-                "Assign your answer to a variable named `result`.\n"
+                "The platform already provides a variable named `prices` containing:\n"
+                "[450, 1200, 850, 1700, 999, 1500]\n\n"
+                "Do not redefine `prices`.\n\n"
+                "Write Python code that sets `result` to the total price of products "
+                "strictly more than 1000.\n"
                 "Expected result: 4400"
             ),
             grading_spec={
@@ -101,12 +99,12 @@ if db.query(Task).count() == 0:
             type="transfer",
             version=TASK_VERSION,
             prompt_text=(
-                "Given:\n"
-                "temperatures = [25, 34, 29, 41, 31]\n"
-                "Write a Python program that creates a new list containing only "
-                "the temperatures strictly greater than 30, preserving the "
-                "original order.\n"
-                "Assign your answer to a variable named `result`.\n"
+                "The platform already provides a variable named `temperatures` containing:\n"
+                "[25, 34, 29, 41, 31]\n\n"
+                "Do not redefine `temperatures`.\n\n"
+                "Write Python code that creates a new list containing only the temperatures "
+                "strictly greater than 30, preserving the original order, and sets `result` "
+                "to that list.\n"
                 "Expected result: [34, 41, 31]"
             ),
             grading_spec={
@@ -128,12 +126,11 @@ if db.query(Task).count() == 0:
             type="criterion",
             version=TASK_VERSION,
             prompt_text=(
-                "A payment system records transaction amounts.\n"
-                "transactions = [250, 1750, 999, 2400, 1000, 1250]\n"
-                "Write a Python program that returns the total value of "
-                "transactions strictly greater than 1000. If no transaction "
-                "qualifies, return 0.\n"
-                "Assign your answer to a variable named `result`.\n"
+                "The platform already provides a variable named `transactions` containing:\n"
+                "[250, 1750, 999, 2400, 1000, 1250]\n\n"
+                "Do not redefine `transactions`.\n\n"
+                "Write Python code that sets `result` to the total value of transactions "
+                "strictly greater than 1000. If no transaction qualifies, set `result` to 0.\n"
                 "Expected result: 5400"
             ),
             grading_spec={
@@ -150,8 +147,14 @@ if db.query(Task).count() == 0:
             },
             scheduled_offset_days=21,
         ),
-    ])
-    db.commit()
+        ])
+        db.commit()
 
-db.close()
-print("Seed complete.")
+
+if __name__ == "__main__":
+    from app.db import SessionLocal, init_db
+
+    init_db()
+    with SessionLocal() as db:
+        seed(db)
+    print("Seed complete.")

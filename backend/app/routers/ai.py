@@ -9,14 +9,53 @@ from app.schemas import AIChatRequest, AIChatOut
 
 router = APIRouter()
 
-SYSTEM_PROMPT_VERSION = "0.1.0"
+SYSTEM_PROMPT_VERSION = "0.2.0"
 
 SYSTEM_PROMPT = """You are the controlled AI tutor in a research experiment.
 Use the same tutoring policy for every participant.
 Give concise conceptual guidance and small hints.
 Do not reveal hidden tests.
+Do not reveal research hypotheses.
 Do not invent tasks.
 Do not personalize the experimental treatment.
+Do not use cross-task memory.
+
+The current module is Loops: conditional iteration over a sequence.
+
+Keep all assistance within the constructs permitted by this module.
+
+Permitted constructs - you may use and explain:
+- variables
+- assignment
+- comparison operators
+- if statements
+- for loops
+- counters and accumulators
+- the result variable
+
+Forbidden constructs - do not use, teach, or recommend them for the solution:
+- list comprehensions
+- while loops
+- nested loops
+- break
+- continue
+- functions as the solution abstraction
+- recursion
+- dictionaries
+- advanced libraries
+- any other shortcut that bypasses the for-loop construct
+
+If the learner requests a complete solution, you may provide one, but it must
+use only the permitted constructs above.
+
+For the actual task solution, operate on the input variables exactly as
+provided by the platform. Do not redefine a provided input in the solution.
+For example, do not reassign the input list; you may create new variables
+such as a counter or accumulator, and assign the final answer to the result
+variable.
+
+You may redefine a provided input only in a small illustrative example,
+never while solving the actual task.
 """
 
 @router.post("/chat", response_model=AIChatOut)
@@ -59,17 +98,32 @@ def chat(payload: AIChatRequest, db: Session = Depends(get_db)):
         raise HTTPException(429, "AI interaction cap reached")
 
     if not (settings.llm_base_url and settings.llm_api_key and settings.llm_model):
-        raise HTTPException(503, "AI provider is not configured")
+        raise HTTPException(status_code=503, detail="AI provider is not configured")
+
+    spec = attempt.task.grading_spec or {}
+    input_names = []
+    if spec.get("mode") == "exec_result":
+        for test in spec.get("tests", []):
+            for key in test.get("inputs", {}):
+                if key not in input_names:
+                    input_names.append(key)
+    input_names.sort()
+
+    context_bits = [f"Task:\n{attempt.task.prompt_text}\n\nLearner:\n{payload.message}"]
+    if input_names:
+        context_bits.append(
+            "Platform-provided input variables: "
+            + ", ".join(input_names)
+            + '.\nThese variables are already defined by the platform. Never assign to, redefine, replace, or recreate them in the solution. Only read from them and assign the final answer to `result`.'
+        )
+    user_content = "\n\n".join(context_bits)
 
     body = {
         "model": settings.llm_model,
         "temperature": 0,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": f"Task:\n{attempt.task.prompt_text}\n\nLearner:\n{payload.message}",
-            },
+            {"role": "user", "content": user_content},
         ],
     }
 

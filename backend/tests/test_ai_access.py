@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from app.config import settings
-from app.models import AIInteraction
+from app.models import AIInteraction, Concept, Task
 
 
 def _configure_llm(monkeypatch):
