@@ -25,6 +25,8 @@ def get_due_tasks(learner_id: int, db: Session = Depends(get_db)):
     for a in attempts:
         if a.task.type == "immediate" and not immediate_available:
             continue
+        if a.task.type == "supported" and immediate_available:
+            continue
         result.append(a)
 
     return [
