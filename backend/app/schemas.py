@@ -18,6 +18,9 @@ class TaskOut(BaseModel):
     type: str
     prompt_text: str
     scheduled_for: datetime
+    remaining_interactions: int
+    started_at: datetime | None = None
+    expires_at: datetime | None = None
 
 class SubmitRequest(BaseModel):
     code: str = Field(min_length=1, max_length=20000)

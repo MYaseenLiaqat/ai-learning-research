@@ -77,3 +77,54 @@ def test_repeated_get_does_not_create_duplicate_attempts(
 
     after = db_session.query(Attempt).filter_by(learner_id=learner.id).count()
     assert after == before
+
+
+def test_supported_task_exposes_remaining_interactions_and_timer(
+    client, db_session, make_learner, make_task, make_attempt
+):
+    from app.config import settings
+
+    learner = make_learner(condition="controlled_ai")
+    task = make_task("supported")
+    make_attempt(learner, task, started_at=datetime.utcnow())
+
+    tasks = _tasks(client, learner.id)
+    supported = [t for t in tasks if t["type"] == "supported"][0]
+
+    # Full AI budget available before any interaction.
+    assert supported["remaining_interactions"] == settings.ai_interaction_cap
+    # Timer fields are exposed from the persisted attempt.
+    assert supported["started_at"] is not None
+    assert supported["expires_at"] is not None
+
+
+def test_learner_status_reports_future_assessments(
+    client, db_session, make_learner, make_task, make_attempt
+):
+    learner = make_learner()
+    delayed = make_task("delayed")
+    make_attempt(
+        learner,
+        delayed,
+        scheduled_for=datetime.utcnow() + timedelta(days=7),
+    )
+
+    resp = client.get(f"/learners/{learner.id}/status")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["learner_id"] == learner.id
+    assert data["has_future_assessments"] is True
+    assert data["next_assessment_at"] is not None
+
+
+def test_learner_status_reports_complete_when_no_future_assessments(
+    client, db_session, make_learner, make_task, make_attempt
+):
+    learner = make_learner()
+    # No future scheduled attempts.
+
+    resp = client.get(f"/learners/{learner.id}/status")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["has_future_assessments"] is False
+    assert data["next_assessment_at"] is None

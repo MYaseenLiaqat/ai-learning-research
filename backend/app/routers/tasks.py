@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import get_db
-from app.models import Attempt, Learner
+from app.models import Attempt, AIInteraction, Learner
 from app.schemas import TaskOut, SubmitRequest, SubmitOut
 from app.services.grader import grade_python
 from app.services.scheduler import due_attempts, is_supported_completed_or_expired
@@ -37,6 +37,14 @@ def get_due_tasks(learner_id: int, db: Session = Depends(get_db)):
             type=a.task.type,
             prompt_text=a.task.prompt_text,
             scheduled_for=a.scheduled_for,
+            remaining_interactions=settings.ai_interaction_cap
+            - db.query(AIInteraction).filter_by(attempt_id=a.id).count(),
+            started_at=a.started_at,
+            expires_at=(
+                a.started_at + timedelta(minutes=settings.supported_phase_minutes)
+                if a.started_at is not None
+                else None
+            ),
         )
         for a in result
     ]

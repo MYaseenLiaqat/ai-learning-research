@@ -1,0 +1,100 @@
+/* Participant-facing study UI */
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  background: #f5f6f8;
+  color: #1c1e21;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.screen { display: block; }
+.screen[hidden] { display: none; }
+
+h1, h2, h3 { color: #111; }
+
+.muted { color: #6b7280; }
+.error { color: #b91c1c; }
+.status { margin-top: 12px; font-weight: 500; }
+.status.ok { color: #15803d; }
+.status.err { color: #b91c1c; }
+
+label { display: block; margin: 12px 0 4px; font-weight: 600; }
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font: inherit;
+}
+
+textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+button {
+  margin-top: 12px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:hover { background: #1d4ed8; }
+button:disabled { background: #9ca3af; cursor: not-allowed; }
+
+.actions { display: flex; gap: 12px; }
+.actions button:last-child { background: #6b7280; }
+.actions button:last-child:hover { background: #4b5563; }
+
+.task-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.timer { font-weight: 700; color: #b45309; }
+.timer.expired { color: #b91c1c; }
+
+.prompt {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  white-space: pre-wrap;
+  margin: 12px 0;
+}
+
+.task-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.task-card h3 { margin: 0 0 8px; }
+.task-card p { margin: 0 0 12px; }
+
+.ai-panel {
+  margin-top: 24px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+}
+.ai-chat {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fff;
+  margin-bottom: 8px;
+}
+.ai-msg { margin: 4px 0; }
+.ai-msg.user { text-align: right; color: #1d4ed8; }
+.ai-msg.assistant { color: #111; }

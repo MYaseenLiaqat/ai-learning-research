@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Programming Study</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <main id="app" class="container">
+    <!-- Identity / entry screen -->
+    <section id="screen-entry" class="screen">
+      <h1>Programming Study</h1>
+      <p>Welcome. Please enter your participant code to begin or continue.</p>
+      <form id="entry-form">
+        <label for="participant-code">Participant code</label>
+        <input id="participant-code" type="text" autocomplete="off" required />
+        <button type="submit">Continue</button>
+      </form>
+      <p id="entry-error" class="error" hidden></p>
+    </section>
+
+    <!-- Task list / home screen -->
+    <section id="screen-home" class="screen" hidden>
+      <h2>Available tasks</h2>
+      <div id="task-list"></div>
+      <p id="home-message" class="muted"></p>
+    </section>
+
+    <!-- Task work screen (Supported or assessment) -->
+    <section id="screen-task" class="screen" hidden>
+      <div class="task-header">
+        <h2 id="task-title"></h2>
+        <div id="task-timer" class="timer" hidden></div>
+      </div>
+      <div id="task-prompt" class="prompt"></div>
+      <label for="code-input">Your code</label>
+      <textarea id="code-input" rows="12" spellcheck="false"></textarea>
+      <div class="actions">
+        <button id="submit-btn" type="button">Submit</button>
+        <button id="back-btn" type="button">Back to tasks</button>
+      </div>
+      <div id="submit-status" class="status" hidden></div>
+
+      <!-- AI tutor panel (Supported, AI condition only) -->
+      <section id="ai-panel" class="ai-panel" hidden>
+        <h3>AI Tutor</h3>
+        <p id="ai-remaining" class="muted"></p>
+        <div id="ai-chat" class="ai-chat"></div>
+        <form id="ai-form">
+          <input id="ai-input" type="text" placeholder="Ask the AI tutor..." autocomplete="off" />
+          <button type="submit">Send</button>
+        </form>
+        <p id="ai-status" class="status" hidden></p>
+      </section>
+    </section>
+
+    <!-- Completion screen -->
+    <section id="screen-complete" class="screen" hidden>
+      <h2 id="complete-title"></h2>
+      <p id="complete-message"></p>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
