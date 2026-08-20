@@ -32,6 +32,7 @@ def get_due_tasks(learner_id: int, db: Session = Depends(get_db)):
     return [
         TaskOut(
             id=a.task.id,
+            attempt_id=a.id,
             concept_id=a.task.concept_id,
             type=a.task.type,
             prompt_text=a.task.prompt_text,

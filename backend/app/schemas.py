@@ -13,6 +13,7 @@ class LearnerOut(BaseModel):
 
 class TaskOut(BaseModel):
     id: int
+    attempt_id: int
     concept_id: int
     type: str
     prompt_text: str
