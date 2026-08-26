@@ -15,9 +15,16 @@
       <form id="entry-form">
         <label for="participant-code">Participant code</label>
         <input id="participant-code" type="text" autocomplete="off" required />
-        <button type="submit">Continue</button>
+        <button id="entry-btn" type="submit">Continue</button>
       </form>
       <p id="entry-error" class="error" hidden></p>
+    </section>
+
+    <!-- Learning-material / start screen -->
+    <section id="screen-material" class="screen" hidden>
+      <h2>Learning material</h2>
+      <div id="material-content"></div>
+      <button id="start-supported-btn" type="button">Start Supported session</button>
     </section>
 
     <!-- Task list / home screen -->

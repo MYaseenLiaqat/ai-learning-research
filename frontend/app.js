@@ -23,6 +23,7 @@
   };
   var screens = {
     entry: $("screen-entry"),
+    material: $("screen-material"),
     home: $("screen-home"),
     task: $("screen-task"),
     complete: $("screen-complete"),
@@ -104,35 +105,34 @@
 
   function formatDate(iso) {
     if (!iso) return "";
-    var d = new Date(iso);
+    var d = parseServerTimestamp(iso);
     return d.toLocaleString();
   }
 
-  // ---- Identity ----
-  function ensureLearner(code) {
-    // If code is numeric, try to load existing learner; else create new.
-    var numeric = /^\d+$/.test(code);
-    if (numeric) {
-      return get("/learners/" + code)
-        .then(function (learner) {
-          return learner;
-        })
-        .catch(function (err) {
-          if (err.status === 404) {
-            return createLearner();
-          }
-          throw err;
-        });
+  function parseServerTimestamp(value) {
+    if (!value) return new Date(value);
+    if (/[zZ]|[+-]\d{2}:?\d{2}$/.test(value)) {
+      return new Date(value);
     }
-    return createLearner();
+    return new Date(value + "Z");
   }
 
-  function createLearner() {
-    return post("/learners", { prior_ability_score: null }).then(
-      function (learner) {
-        return learner;
-      },
-    );
+  // ---- Identity ----
+  // Longitudinal experiment: participants must return using the same learner
+  // record so their randomized condition and measurement arm stay stable.
+  // We only LOAD an existing learner by numeric code. We never auto-create.
+  function ensureLearner(code) {
+    var numeric = /^\d+$/.test(code);
+    if (!numeric) {
+      return Promise.reject(
+        new Error(
+          "Invalid participant code. Please enter the numeric code provided by the researcher.",
+        ),
+      );
+    }
+    return get("/learners/" + code).then(function (learner) {
+      return learner;
+    });
   }
 
   // ---- Task loading ----
@@ -145,6 +145,95 @@
 
   function loadStatus() {
     return get("/learners/" + state.learnerId + "/status");
+  }
+
+  function appendBasicMarkdown(parent, text) {
+    String(text || "")
+      .replace(/([^\n])\s+(?=#{1,6}\s+)/g, "$1\n")
+      .split("\n")
+      .forEach(function (line) {
+        if (!line.trim()) return;
+
+        var heading = line.match(/^(#{1,6})\s+(.+)$/);
+        var block = document.createElement(
+          heading ? "h" + heading[1].length : "p",
+        );
+        var content = heading ? heading[2] : line;
+        var parts = content.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+
+        parts.forEach(function (part) {
+          if (
+            part.indexOf("**") === 0 &&
+            part.lastIndexOf("**") === part.length - 2
+          ) {
+            var strong = document.createElement("strong");
+            strong.textContent = part.slice(2, -2);
+            block.appendChild(strong);
+          } else if (
+            part.indexOf("`") === 0 &&
+            part.lastIndexOf("`") === part.length - 1
+          ) {
+            var code = document.createElement("code");
+            code.textContent = part.slice(1, -1);
+            block.appendChild(code);
+          } else {
+            block.appendChild(document.createTextNode(part));
+          }
+        });
+
+        parent.appendChild(block);
+      });
+  }
+
+  // ---- Rendering: learning material ----
+  function renderMaterial() {
+    return get("/learning/loops").then(function (module) {
+      var container = $("material-content");
+      container.innerHTML = "";
+
+      function section(title, text) {
+        var h = document.createElement("h3");
+        h.textContent = title;
+        container.appendChild(h);
+        appendBasicMarkdown(container, text);
+      }
+
+      section("Concept explanation", module.explanation);
+      if (module.worked_example) {
+        section("Worked example", module.worked_example.problem);
+        var sol = document.createElement("pre");
+        sol.textContent = module.worked_example.solution || "";
+        container.appendChild(sol);
+      }
+      if (module.guided_practice) {
+        section("Guided practice", module.guided_practice.problem);
+      }
+      if (module.static_hints && module.static_hints.length) {
+        section("Hints", module.static_hints.join("\n"));
+      }
+    });
+  }
+
+  function startSupportedSession() {
+    var btn = $("start-supported-btn");
+    btn.disabled = true;
+    btn.textContent = "Starting...";
+    return post("/learning/loops/start?learner_id=" + state.learnerId, null)
+      .catch(function (err) {
+        btn.disabled = false;
+        btn.textContent = "Start Supported session";
+        throw err;
+      })
+      .then(function () {
+        return loadTasks();
+      });
+  }
+
+  function goToHome() {
+    loadTasks().then(function () {
+      renderHome();
+      showScreen("home");
+    });
   }
 
   // ---- Rendering: home ----
@@ -235,7 +324,7 @@
     var timerEl = $("task-timer");
     function tick() {
       var now = Date.now();
-      var expires = new Date(expiresIso).getTime();
+      var expires = parseServerTimestamp(expiresIso).getTime();
       var diff = expires - now;
       if (diff <= 0) {
         timerEl.textContent = "Time expired";
@@ -262,8 +351,7 @@
   }
 
   function updateAiRemaining(remaining) {
-    $("ai-remaining").textContent =
-      "AI interactions remaining: " + remaining + " of 8";
+    $("ai-remaining").textContent = remaining + " AI requests remaining";
   }
 
   // ---- Submission ----
@@ -291,7 +379,16 @@
         });
       })
       .then(function (status) {
-        // After submission, show completion/return-later or go home.
+        // After submission, if Immediate is now available, guide the
+        // participant straight into it (still AI-free). Otherwise show
+        // completion/return-later or study-complete.
+        var immediate = state.tasks.find(function (t) {
+          return t.type === "immediate";
+        });
+        if (immediate) {
+          openTask(immediate);
+          return;
+        }
         if (status.has_future_assessments) {
           showComplete(
             "Part complete",
@@ -331,7 +428,7 @@
       .then(function (data) {
         var aiMsg = document.createElement("div");
         aiMsg.className = "ai-msg assistant";
-        aiMsg.textContent = data.response;
+        appendBasicMarkdown(aiMsg, data.response);
         chat.appendChild(aiMsg);
         chat.scrollTop = chat.scrollHeight;
         updateAiRemaining(data.remaining_interactions);
@@ -367,6 +464,18 @@
         return loadTasks();
       })
       .then(function () {
+        // If the Supported session has not started, show the standardized
+        // learning material first. Otherwise resume at the task list.
+        var supported = state.tasks.find(function (t) {
+          return t.type === "supported" && !t.started_at;
+        });
+        if (supported) {
+          return renderMaterial().then(function () {
+            $("start-supported-btn").disabled = false;
+            $("start-supported-btn").textContent = "Start Supported session";
+            showScreen("material");
+          });
+        }
         renderHome();
         showScreen("home");
       })
@@ -383,17 +492,38 @@
     e.preventDefault();
     var code = $("participant-code").value.trim();
     if (!code) return;
-    enterStudy(code);
+    var btn = $("entry-btn");
+    btn.disabled = true;
+    btn.textContent = "Loading...";
+    enterStudy(code).finally(function () {
+      btn.disabled = false;
+      btn.textContent = "Continue";
+    });
+  });
+
+  $("start-supported-btn").addEventListener("click", function () {
+    startSupportedSession()
+      .then(function (tasks) {
+        var supported = tasks.find(function (task) {
+          return task.type === "supported";
+        });
+        if (supported) {
+          openTask(supported);
+        } else {
+          goToHome();
+        }
+      })
+      .catch(function (err) {
+        var el = $("entry-error");
+        showError(el, err.message || "Could not start the supported session.");
+      });
   });
 
   $("submit-btn").addEventListener("click", submitCurrent);
 
   $("back-btn").addEventListener("click", function () {
     stopTimer();
-    loadTasks().then(function () {
-      renderHome();
-      showScreen("home");
-    });
+    goToHome();
   });
 
   $("ai-form").addEventListener("submit", function (e) {

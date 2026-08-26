@@ -36,7 +36,16 @@ input[type="text"], textarea {
   font: inherit;
 }
 
-textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+textarea, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+pre {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
 
 button {
   margin-top: 12px;
