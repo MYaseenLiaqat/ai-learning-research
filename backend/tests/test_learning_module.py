@@ -1,5 +1,6 @@
-def test_learning_module_retrieval(client):
-    resp = client.get("/learning/loops")
+def test_learning_module_retrieval(client, make_learner):
+    learner = make_learner()
+    resp = client.get(f"/learning/loops?learner_id={learner.id}")
 
     assert resp.status_code == 200
     data = resp.json()
@@ -12,10 +13,12 @@ def test_learning_module_retrieval(client):
     assert len(data["static_hints"]) == 3
 
 
-def test_learning_material_identical_across_conditions(client):
+def test_learning_material_identical_across_conditions(client, make_learner):
     # Both conditions call the same unauthenticated, condition-independent endpoint.
-    ai_resp = client.get("/learning/loops")
-    no_ai_resp = client.get("/learning/loops")
+    ai = make_learner(condition="controlled_ai")
+    no_ai = make_learner(condition="no_ai")
+    ai_resp = client.get(f"/learning/loops?learner_id={ai.id}")
+    no_ai_resp = client.get(f"/learning/loops?learner_id={no_ai.id}")
 
     assert ai_resp.status_code == 200
     assert no_ai_resp.status_code == 200
@@ -30,7 +33,7 @@ def test_get_learning_loops_does_not_start_session(
     task = make_task("supported")
     attempt = make_attempt(learner, task)
 
-    resp = client.get("/learning/loops")
+    resp = client.get(f"/learning/loops?learner_id={learner.id}")
 
     assert resp.status_code == 200
     db_session.refresh(attempt)

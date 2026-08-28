@@ -52,7 +52,7 @@ def test_supported_expiry_computed_server_side_from_persisted_started_at(
     learner = make_learner()
     task = make_task("supported")
     # Persisted started_at 21 minutes ago (> 20-minute pilot window).
-    make_attempt(
+    attempt = make_attempt(
         learner,
         task,
         started_at=datetime.utcnow() - timedelta(minutes=21),
@@ -95,7 +95,7 @@ def test_expired_supported_attempt_cannot_create_new_supported_session(
     learner = make_learner()
     task = make_task("supported")
     # Expired (21 minutes ago), not completed.
-    make_attempt(
+    attempt = make_attempt(
         learner,
         task,
         started_at=datetime.utcnow() - timedelta(minutes=21),
@@ -103,10 +103,11 @@ def test_expired_supported_attempt_cannot_create_new_supported_session(
 
     # Attempting to start the session again must not reset or grant a new one.
     start_resp = client.post(f"/learning/loops/start?learner_id={learner.id}")
-    assert start_resp.status_code == 200
-    started = start_resp.json()["started_at"]
+    assert start_resp.status_code == 409
     # started_at is the persisted (now-expired) original start, not a reset.
-    assert datetime.fromisoformat(started) < datetime.utcnow() - timedelta(minutes=20)
+    db_session.refresh(attempt)
+    assert attempt.started_at < datetime.utcnow() - timedelta(minutes=20)
+    assert attempt.supported_end_reason == "expired"
 
     # Submission must still be rejected as expired.
     sub = client.post(

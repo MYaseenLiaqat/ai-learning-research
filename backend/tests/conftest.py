@@ -66,6 +66,7 @@ def make_task(db_session, concept):
                 {"expression": "add(1,2)", "expected": 3},
             ]},
             scheduled_offset_days=offset_days,
+            version="0.2.0",
         )
         db_session.add(t)
         db_session.commit()
@@ -81,6 +82,14 @@ def make_learner(db_session):
             prior_ability_score=0.5,
             condition=condition,
             measurement_arm="full",
+            study_protocol_version="v0.3",
+            learning_module_version="v0.2.0",
+            system_prompt_version="0.2.0" if condition == "controlled_ai" else None,
+            ai_provider="groq" if condition == "controlled_ai" else None,
+            ai_model="fake-model" if condition == "controlled_ai" else None,
+            ai_interaction_cap=8 if condition == "controlled_ai" else None,
+            supported_phase_minutes=20,
+            participation_status="active",
         )
         db_session.add(l)
         db_session.commit()
@@ -98,6 +107,7 @@ def make_attempt(db_session):
             scheduled_for=scheduled_for or datetime.utcnow(),
             completed_at=completed_at,
             started_at=started_at,
+            task_version=task.version,
         )
         db_session.add(a)
         db_session.commit()

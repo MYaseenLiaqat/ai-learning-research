@@ -10,6 +10,14 @@ class LearnerOut(BaseModel):
     condition: str
     measurement_arm: str
     created_at: datetime
+    study_protocol_version: str | None = None
+    learning_module_version: str | None = None
+    system_prompt_version: str | None = None
+    ai_provider: str | None = None
+    ai_model: str | None = None
+    ai_interaction_cap: int | None = None
+    supported_phase_minutes: int | None = None
+    participation_status: str = "active"
 
 class TaskOut(BaseModel):
     id: int
@@ -21,6 +29,9 @@ class TaskOut(BaseModel):
     remaining_interactions: int
     started_at: datetime | None = None
     expires_at: datetime | None = None
+
+class TaskStartOut(TaskOut):
+    pass
 
 class SubmitRequest(BaseModel):
     code: str = Field(min_length=1, max_length=20000)

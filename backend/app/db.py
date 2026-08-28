@@ -33,6 +33,22 @@ def _apply_lightweight_migrations():
         return
     inspector = inspect(engine)
     with engine.begin() as conn:
+        learner_cols = {c["name"] for c in inspector.get_columns("learners")}
+        learner_additions = {
+            "study_protocol_version": "VARCHAR(30)",
+            "learning_module_version": "VARCHAR(30)",
+            "system_prompt_version": "VARCHAR(30)",
+            "ai_provider": "VARCHAR(50)",
+            "ai_model": "VARCHAR(100)",
+            "ai_interaction_cap": "INTEGER",
+            "supported_phase_minutes": "INTEGER",
+            "participation_status": "VARCHAR(20)",
+        }
+        for name, definition in learner_additions.items():
+            if name not in learner_cols:
+                conn.exec_driver_sql(
+                    f"ALTER TABLE learners ADD COLUMN {name} {definition}"
+                )
         task_cols = {c["name"] for c in inspector.get_columns("tasks")}
         if "version" not in task_cols:
             conn.exec_driver_sql("ALTER TABLE tasks ADD COLUMN version VARCHAR(30)")
@@ -41,3 +57,9 @@ def _apply_lightweight_migrations():
             conn.exec_driver_sql("ALTER TABLE attempts ADD COLUMN started_at DATETIME")
         if "module_version" not in attempt_cols:
             conn.exec_driver_sql("ALTER TABLE attempts ADD COLUMN module_version VARCHAR(30)")
+        if "task_version" not in attempt_cols:
+            conn.exec_driver_sql("ALTER TABLE attempts ADD COLUMN task_version VARCHAR(30)")
+        if "grader_version" not in attempt_cols:
+            conn.exec_driver_sql("ALTER TABLE attempts ADD COLUMN grader_version VARCHAR(30)")
+        if "supported_end_reason" not in attempt_cols:
+            conn.exec_driver_sql("ALTER TABLE attempts ADD COLUMN supported_end_reason VARCHAR(20)")

@@ -187,31 +187,33 @@
 
   // ---- Rendering: learning material ----
   function renderMaterial() {
-    return get("/learning/loops").then(function (module) {
-      var container = $("material-content");
-      container.innerHTML = "";
+    return get("/learning/loops?learner_id=" + state.learnerId).then(
+      function (module) {
+        var container = $("material-content");
+        container.innerHTML = "";
 
-      function section(title, text) {
-        var h = document.createElement("h3");
-        h.textContent = title;
-        container.appendChild(h);
-        appendBasicMarkdown(container, text);
-      }
+        function section(title, text) {
+          var h = document.createElement("h3");
+          h.textContent = title;
+          container.appendChild(h);
+          appendBasicMarkdown(container, text);
+        }
 
-      section("Concept explanation", module.explanation);
-      if (module.worked_example) {
-        section("Worked example", module.worked_example.problem);
-        var sol = document.createElement("pre");
-        sol.textContent = module.worked_example.solution || "";
-        container.appendChild(sol);
-      }
-      if (module.guided_practice) {
-        section("Guided practice", module.guided_practice.problem);
-      }
-      if (module.static_hints && module.static_hints.length) {
-        section("Hints", module.static_hints.join("\n"));
-      }
-    });
+        section("Concept explanation", module.explanation);
+        if (module.worked_example) {
+          section("Worked example", module.worked_example.problem);
+          var sol = document.createElement("pre");
+          sol.textContent = module.worked_example.solution || "";
+          container.appendChild(sol);
+        }
+        if (module.guided_practice) {
+          section("Guided practice", module.guided_practice.problem);
+        }
+        if (module.static_hints && module.static_hints.length) {
+          section("Hints", module.static_hints.join("\n"));
+        }
+      },
+    );
   }
 
   function startSupportedSession() {
@@ -275,7 +277,9 @@
       var btn = document.createElement("button");
       btn.textContent = "Start";
       btn.addEventListener("click", function () {
-        openTask(t);
+        openTask(t).catch(function (err) {
+          showError($("home-message"), err.message || "Could not start task.");
+        });
       });
       card.appendChild(btn);
 
@@ -284,7 +288,7 @@
   }
 
   // ---- Rendering: task ----
-  function openTask(task) {
+  function renderTask(task) {
     state.currentTask = task;
     $("task-title").textContent = taskLabel(task.type);
     $("task-prompt").textContent = task.prompt_text;
@@ -317,6 +321,20 @@
     }
 
     showScreen("task");
+  }
+
+  function openTask(task) {
+    if (task.type === "supported") {
+      renderTask(task);
+      return Promise.resolve(task);
+    }
+    return post(
+      "/tasks/" + task.id + "/start?learner_id=" + state.learnerId,
+      null,
+    ).then(function (startedTask) {
+      renderTask(startedTask);
+      return startedTask;
+    });
   }
 
   function startTimer(expiresIso) {
@@ -508,7 +526,7 @@
           return task.type === "supported";
         });
         if (supported) {
-          openTask(supported);
+          return openTask(supported);
         } else {
           goToHome();
         }

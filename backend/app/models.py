@@ -10,6 +10,14 @@ class Learner(Base):
     condition: Mapped[str] = mapped_column(String(30))
     measurement_arm: Mapped[str] = mapped_column(String(30))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    study_protocol_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    learning_module_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    system_prompt_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    ai_provider: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    ai_model: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    ai_interaction_cap: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    supported_phase_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    participation_status: Mapped[str] = mapped_column(String(20), default="active")
     attempts = relationship("Attempt", back_populates="learner")
 
 class Concept(Base):
@@ -44,6 +52,9 @@ class Attempt(Base):
     module_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
     graded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    task_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    grader_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    supported_end_reason: Mapped[str | None] = mapped_column(String(20), nullable=True)
     learner = relationship("Learner", back_populates="attempts")
     task = relationship("Task")
 

@@ -6,6 +6,8 @@ from app.config import settings
 from app.db import get_db
 from app.models import Attempt, AIInteraction, Learner
 from app.schemas import AIChatRequest, AIChatOut
+from app.services.scheduler import mark_supported_expired, supported_expiry
+from app.services.provenance import FrozenProvenanceError, require_ai_provenance
 
 router = APIRouter()
 
@@ -58,6 +60,25 @@ You may redefine a provided input only in a small illustrative example,
 never while solving the actual task.
 """
 
+SYSTEM_PROMPT_REGISTRY = {
+    SYSTEM_PROMPT_VERSION: SYSTEM_PROMPT,
+}
+KNOWN_AI_PROVIDERS = {"groq"}
+AI_PROVIDER_REGISTRY = {
+    "groq": lambda: {
+        "base_url": settings.llm_base_url,
+        "api_key": settings.llm_api_key,
+        "timeout": settings.llm_timeout_seconds,
+    },
+}
+
+
+def get_system_prompt(version: str):
+    prompt = SYSTEM_PROMPT_REGISTRY.get(version)
+    if prompt is None:
+        raise KeyError(f"Unknown system prompt version: {version}")
+    return prompt
+
 @router.post("/chat", response_model=AIChatOut)
 def chat(payload: AIChatRequest, db: Session = Depends(get_db)):
     attempt = db.get(Attempt, payload.attempt_id)
@@ -67,10 +88,16 @@ def chat(payload: AIChatRequest, db: Session = Depends(get_db)):
     learner = db.get(Learner, attempt.learner_id)
     if not learner:
         raise HTTPException(404, "Learner not found")
+    if learner.participation_status != "active":
+        raise HTTPException(403, "Participation is withdrawn")
 
     # AI is only available to the controlled-AI condition.
     if learner.condition != "controlled_ai":
         raise HTTPException(403, "AI assistance is not available")
+    try:
+        require_ai_provenance(learner)
+    except FrozenProvenanceError as exc:
+        raise HTTPException(503, str(exc))
 
     # AI is only available during the Supported learning phase.
     if attempt.task.type != "supported":
@@ -89,15 +116,23 @@ def chat(payload: AIChatRequest, db: Session = Depends(get_db)):
         raise HTTPException(409, "Supported session has not started")
 
     # Enforce Supported-session time limit.
-    expiry = attempt.started_at + timedelta(minutes=settings.supported_phase_minutes)
-    if datetime.utcnow() > expiry:
+    if attempt.supported_end_reason == "expired" or mark_supported_expired(attempt):
+        db.commit()
         raise HTTPException(409, "Supported session has expired")
 
     count = db.query(AIInteraction).filter_by(attempt_id=attempt.id).count()
-    if count >= settings.ai_interaction_cap:
+    if learner.ai_interaction_cap is None or count >= learner.ai_interaction_cap:
         raise HTTPException(429, "AI interaction cap reached")
 
-    if not (settings.llm_base_url and settings.llm_api_key and settings.llm_model):
+    provider = AI_PROVIDER_REGISTRY.get(learner.ai_provider)
+    if provider is None:
+        raise HTTPException(503, "Frozen AI provider is not configured")
+    try:
+        system_prompt = get_system_prompt(learner.system_prompt_version)
+    except KeyError as exc:
+        raise HTTPException(503, str(exc))
+    provider_config = provider()
+    if not (provider_config["base_url"] and provider_config["api_key"]):
         raise HTTPException(status_code=503, detail="AI provider is not configured")
 
     spec = attempt.task.grading_spec or {}
@@ -119,20 +154,20 @@ def chat(payload: AIChatRequest, db: Session = Depends(get_db)):
     user_content = "\n\n".join(context_bits)
 
     body = {
-        "model": settings.llm_model,
+        "model": learner.ai_model,
         "temperature": 0,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content},
         ],
     }
 
     try:
         response = httpx.post(
-            settings.llm_base_url.rstrip("/") + "/chat/completions",
-            headers={"Authorization": f"Bearer {settings.llm_api_key}"},
+            provider_config["base_url"].rstrip("/") + "/chat/completions",
+            headers={"Authorization": f"Bearer {provider_config['api_key']}"},
             json=body,
-            timeout=settings.llm_timeout_seconds,
+            timeout=provider_config["timeout"],
         )
         response.raise_for_status()
         answer = response.json()["choices"][0]["message"]["content"]
@@ -151,5 +186,5 @@ def chat(payload: AIChatRequest, db: Session = Depends(get_db)):
     return AIChatOut(
         sequence_num=count + 1,
         response=answer,
-        remaining_interactions=settings.ai_interaction_cap - count - 1,
+        remaining_interactions=learner.ai_interaction_cap - count - 1,
     )

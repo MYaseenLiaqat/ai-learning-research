@@ -61,3 +61,14 @@ LOOPS_MODULE = {
         "When the condition is true, update the result.",
     ],
 }
+
+MODULE_REGISTRY = {
+    LOOPS_MODULE["version"]: LOOPS_MODULE,
+}
+
+
+def get_learning_module(version: str):
+    module = MODULE_REGISTRY.get(version)
+    if module is None:
+        raise KeyError(f"Unknown learning module version: {version}")
+    return module

@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.config import settings
 from app.models import Learner, Task, Attempt
+from app.services.provenance import FrozenProvenanceError, require_common_provenance
 
 ALLOWED = {
     "immediate_only": {"supported", "immediate"},
@@ -20,12 +21,39 @@ def seed_attempts(db: Session, learner: Learner):
         db.add(Attempt(
             learner_id=learner.id,
             task_id=task.id,
+            task_version=task.version,
             scheduled_for=scheduled,
         ))
     db.commit()
 
+
+def supported_expiry(attempt: Attempt):
+    try:
+        require_common_provenance(attempt.learner)
+    except FrozenProvenanceError:
+        raise
+    minutes = attempt.learner.supported_phase_minutes
+    if minutes is None:
+        raise FrozenProvenanceError(
+            "Frozen learner provenance is missing supported_phase_minutes"
+        )
+    return attempt.started_at + timedelta(minutes=minutes)
+
+
+def mark_supported_expired(attempt: Attempt, now=None):
+    if (
+        attempt.task.type == "supported"
+        and attempt.started_at is not None
+        and attempt.completed_at is None
+        and attempt.supported_end_reason is None
+        and (now or datetime.utcnow()) >= supported_expiry(attempt)
+    ):
+        attempt.supported_end_reason = "expired"
+        return True
+    return False
+
 def due_attempts(db: Session, learner_id: int):
-    return (
+    attempts = (
         db.query(Attempt)
         .filter(
             Attempt.learner_id == learner_id,
@@ -34,6 +62,10 @@ def due_attempts(db: Session, learner_id: int):
         )
         .all()
     )
+    changed = any(mark_supported_expired(attempt) for attempt in attempts)
+    if changed:
+        db.commit()
+    return attempts
 
 def is_supported_completed_or_expired(db: Session, learner_id: int) -> bool:
     """Whether the Immediate assessment is unlocked.
@@ -55,8 +87,10 @@ def is_supported_completed_or_expired(db: Session, learner_id: int) -> bool:
         return False
     if supported.completed_at is not None:
         return True
+    if supported.supported_end_reason == "expired":
+        return True
     if supported.started_at is not None:
-        expiry = supported.started_at + timedelta(minutes=settings.supported_phase_minutes)
-        if datetime.utcnow() > expiry:
+        if mark_supported_expired(supported):
+            db.commit()
             return True
     return False
