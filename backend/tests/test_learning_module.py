@@ -5,7 +5,7 @@ def test_learning_module_retrieval(client, make_learner):
     assert resp.status_code == 200
     data = resp.json()
     assert data["module_id"] == "loops"
-    assert data["version"] == "v0.2.0"
+    assert data["version"] == "v0.3.0"
     assert "explanation" in data
     assert "worked_example" in data
     assert "guided_practice" in data
@@ -24,6 +24,17 @@ def test_learning_material_identical_across_conditions(client, make_learner):
     assert no_ai_resp.status_code == 200
     # Identical material content for both conditions.
     assert ai_resp.json() == no_ai_resp.json()
+
+
+def test_guided_practice_is_scaffolded(client, make_learner):
+    learner = make_learner()
+    resp = client.get(f"/learning/loops?learner_id={learner.id}")
+    content = resp.json()["guided_practice"]["problem"]
+
+    assert "___" in content
+    assert "for value in stock_levels" in content
+    assert "if value" in content
+    assert "result" in content
 
 
 def test_get_learning_loops_does_not_start_session(

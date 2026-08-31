@@ -1,6 +1,6 @@
 from app.models import Concept, Task
 
-TASK_VERSION = "0.2.0"
+TASK_VERSION = "0.3.0"
 
 
 def seed(db):
@@ -25,8 +25,7 @@ def seed(db):
                 "[28, 32, 35, 29, 31, 27]\n\n"
                 "Do not redefine `temperatures`.\n\n"
                 "Write Python code that sets `result` to the number of temperatures "
-                "strictly greater than 30.\n"
-                "Expected result: 3"
+                "strictly greater than 30."
             ),
             grading_spec={
                 "mode": "exec_result",
@@ -51,8 +50,7 @@ def seed(db):
                 "[42, 67, 81, 39, 55, 48, 72]\n\n"
                 "Do not redefine `scores`.\n\n"
                 "Write Python code that sets `result` to the number of scores that are "
-                "greater than or equal to 50.\n"
-                "Expected result: 4"
+                "greater than or equal to 50."
             ),
             grading_spec={
                 "mode": "exec_result",
@@ -77,8 +75,7 @@ def seed(db):
                 "[450, 1200, 850, 1700, 999, 1500]\n\n"
                 "Do not redefine `prices`.\n\n"
                 "Write Python code that sets `result` to the total price of products "
-                "strictly more than 1000.\n"
-                "Expected result: 4400"
+                "strictly more than 1000."
             ),
             grading_spec={
                 "mode": "exec_result",
@@ -99,24 +96,23 @@ def seed(db):
             type="transfer",
             version=TASK_VERSION,
             prompt_text=(
-                "The platform already provides a variable named `temperatures` containing:\n"
-                "[25, 34, 29, 41, 31]\n\n"
-                "Do not redefine `temperatures`.\n\n"
-                "Write Python code that creates a new list containing only the temperatures "
-                "strictly greater than 30, preserving the original order, and sets `result` "
-                "to that list.\n"
-                "Expected result: [34, 41, 31]"
+                "The platform already provides a variable named `readings` containing:\n"
+                "[18, 42, 29, 51, 33]\n\n"
+                "Do not redefine `readings`.\n\n"
+                "Write Python code that sets `result` to the total amount by which readings "
+                "above 30 exceed 30. For example, a reading of 42 contributes 12 because "
+                "42 - 30 = 12."
             ),
             grading_spec={
                 "mode": "exec_result",
                 "result_var": "result",
                 "tests": [
-                    {"inputs": {"temperatures": [25, 34, 29, 41, 31]}, "expected": [34, 41, 31]},
-                    {"inputs": {"temperatures": []}, "expected": []},
-                    {"inputs": {"temperatures": [30, 30]}, "expected": []},
-                    {"inputs": {"temperatures": [31, 31]}, "expected": [31, 31]},
-                    {"inputs": {"temperatures": [40, 20, 50]}, "expected": [40, 50]},
-                    {"inputs": {"temperatures": [10, 20]}, "expected": []},
+                    {"inputs": {"readings": [18, 42, 29, 51, 33]}, "expected": 36},
+                    {"inputs": {"readings": []}, "expected": 0},
+                    {"inputs": {"readings": [30, 30]}, "expected": 0},
+                    {"inputs": {"readings": [31, 31]}, "expected": 2},
+                    {"inputs": {"readings": [40, 20, 50]}, "expected": 30},
+                    {"inputs": {"readings": [10, 20]}, "expected": 0},
                 ],
             },
             scheduled_offset_days=14,
@@ -126,23 +122,22 @@ def seed(db):
             type="criterion",
             version=TASK_VERSION,
             prompt_text=(
-                "The platform already provides a variable named `transactions` containing:\n"
-                "[250, 1750, 999, 2400, 1000, 1250]\n\n"
-                "Do not redefine `transactions`.\n\n"
-                "Write Python code that sets `result` to the total value of transactions "
-                "strictly greater than 1000. If no transaction qualifies, set `result` to 0.\n"
-                "Expected result: 5400"
+                "The platform already provides a variable named `hours` containing:\n"
+                "[5, 12, 8, 17, 9, 14]\n\n"
+                "Do not redefine `hours`.\n\n"
+                "Write Python code that sets `result` to the total number of overtime hours "
+                "across all shifts that last at least 10 hours. If no shift qualifies, set `result` to 0."
             ),
             grading_spec={
                 "mode": "exec_result",
                 "result_var": "result",
                 "tests": [
-                    {"inputs": {"transactions": [250, 1750, 999, 2400, 1000, 1250]}, "expected": 5400},
-                    {"inputs": {"transactions": []}, "expected": 0},
-                    {"inputs": {"transactions": [500, 600]}, "expected": 0},
-                    {"inputs": {"transactions": [1001]}, "expected": 1001},
-                    {"inputs": {"transactions": [1500, 1500]}, "expected": 3000},
-                    {"inputs": {"transactions": [1000, 1001]}, "expected": 1001},
+                    {"inputs": {"hours": [5, 12, 8, 17, 9, 14]}, "expected": 43},
+                    {"inputs": {"hours": []}, "expected": 0},
+                    {"inputs": {"hours": [9, 8, 7]}, "expected": 0},
+                    {"inputs": {"hours": [10]}, "expected": 10},
+                    {"inputs": {"hours": [10, 10]}, "expected": 20},
+                    {"inputs": {"hours": [9, 10, 12]}, "expected": 22},
                 ],
             },
             scheduled_offset_days=21,

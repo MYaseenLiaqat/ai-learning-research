@@ -30,7 +30,7 @@ def test_new_learner_freezes_provenance(client, db_session, monkeypatch):
     assert response.status_code == 200
     learner = response.json()
     assert learner["study_protocol_version"] == "v0.3"
-    assert learner["learning_module_version"] == "v0.2.0"
+    assert learner["learning_module_version"] == "v0.3.0"
     assert learner["system_prompt_version"] in (None, SYSTEM_PROMPT_VERSION)
     assert learner["ai_provider"] in (None, "groq")
     assert learner["ai_model"] in (None, "frozen-model")
@@ -75,7 +75,7 @@ def test_task_version_is_snapshotted(make_learner, make_task, make_attempt):
     task = make_task("immediate")
     attempt = make_attempt(learner, task)
     task.version = "changed"
-    assert attempt.task_version == "0.2.0"
+    assert attempt.task_version == "0.3.0"
 
 
 def test_frozen_duration_drives_expiry(client, db_session, make_learner, make_task, make_attempt):
@@ -156,16 +156,25 @@ def test_unknown_module_version_fails_closed(client, make_learner):
 
 def test_module_registry_keeps_frozen_version(monkeypatch, make_learner, client):
     learner = make_learner()
-    original = MODULE_REGISTRY["v0.2.0"]
+    original_released = MODULE_REGISTRY["v0.2.0"]
+    original_current = MODULE_REGISTRY["v0.3.0"]
     MODULE_REGISTRY["vA"] = {"module_id": "loops", "version": "vA"}
     MODULE_REGISTRY["vB"] = {"module_id": "loops", "version": "vB"}
     learner.learning_module_version = "vA"
     monkeypatch.setattr(settings, "learning_module_version", "vB")
     response = client.get(f"/learning/loops?learner_id={learner.id}")
     assert response.json()["version"] == "vA"
-    MODULE_REGISTRY["v0.2.0"] = original
+    MODULE_REGISTRY["v0.2.0"] = original_released
+    MODULE_REGISTRY["v0.3.0"] = original_current
     MODULE_REGISTRY.pop("vA")
     MODULE_REGISTRY.pop("vB")
+
+
+def test_current_module_version_is_resolved_and_legacy_version_remains_available():
+    assert "v0.3.0" in MODULE_REGISTRY
+    assert "v0.2.0" in MODULE_REGISTRY
+    assert MODULE_REGISTRY["v0.3.0"]["version"] == "v0.3.0"
+    assert MODULE_REGISTRY["v0.2.0"]["version"] == "v0.2.0"
 
 
 def test_prompt_registry_keeps_frozen_version(monkeypatch, make_learner):
