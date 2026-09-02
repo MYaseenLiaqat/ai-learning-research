@@ -89,7 +89,7 @@
   function taskLabel(type) {
     switch (type) {
       case "supported":
-        return "Learning task";
+        return "Supported practice";
       case "immediate":
         return "Assessment 1";
       case "delayed":
@@ -148,10 +148,24 @@
   }
 
   function appendBasicMarkdown(parent, text) {
+    var codeBlock = null;
     String(text || "")
       .replace(/([^\n])\s+(?=#{1,6}\s+)/g, "$1\n")
       .split("\n")
       .forEach(function (line) {
+        if (line.trim().indexOf("```") === 0) {
+          if (codeBlock) {
+            parent.appendChild(codeBlock);
+            codeBlock = null;
+          } else {
+            codeBlock = document.createElement("pre");
+          }
+          return;
+        }
+        if (codeBlock) {
+          codeBlock.textContent += (codeBlock.textContent ? "\n" : "") + line;
+          return;
+        }
         if (!line.trim()) return;
 
         var heading = line.match(/^(#{1,6})\s+(.+)$/);
@@ -183,6 +197,7 @@
 
         parent.appendChild(block);
       });
+    if (codeBlock) parent.appendChild(codeBlock);
   }
 
   // ---- Rendering: learning material ----
@@ -218,24 +233,34 @@
 
   function startSupportedSession() {
     var btn = $("start-supported-btn");
+    clearError($("material-error"));
     btn.disabled = true;
     btn.textContent = "Starting...";
     return post("/learning/loops/start?learner_id=" + state.learnerId, null)
+      .then(function () {
+        clearError($("material-error"));
+        return loadTasks();
+      })
       .catch(function (err) {
         btn.disabled = false;
         btn.textContent = "Start Supported session";
         throw err;
-      })
-      .then(function () {
-        return loadTasks();
       });
   }
 
   function goToHome() {
-    loadTasks().then(function () {
-      renderHome();
-      showScreen("home");
-    });
+    loadTasks()
+      .then(function () {
+        renderHome();
+        showScreen("home");
+      })
+      .catch(function () {
+        var statusEl = $("submit-status");
+        statusEl.className = "status err";
+        statusEl.textContent =
+          "We could not load your tasks. Please try again.";
+        statusEl.hidden = false;
+      });
   }
 
   // ---- Rendering: home ----
@@ -392,32 +417,44 @@
           : "Submitted. Score: " + result.score;
         $("submit-btn").disabled = true;
         // Refresh tasks to reflect unlock of next phase.
-        return loadTasks().then(function () {
-          return loadStatus();
-        });
-      })
-      .then(function (status) {
-        // After submission, if Immediate is now available, guide the
-        // participant straight into it (still AI-free). Otherwise show
-        // completion/return-later or study-complete.
-        var immediate = state.tasks.find(function (t) {
-          return t.type === "immediate";
-        });
-        if (immediate) {
-          openTask(immediate);
-          return;
-        }
-        if (status.has_future_assessments) {
-          showComplete(
-            "Part complete",
-            "You have completed this part. Please return later for the next assessment.",
-          );
-        } else {
-          showComplete(
-            "Study complete",
-            "You have completed the study. Thank you!",
-          );
-        }
+        return loadTasks()
+          .then(function () {
+            return loadStatus();
+          })
+          .then(function (status) {
+            // After submission, if Immediate is now available, guide the
+            // participant straight into it (still AI-free). Otherwise show
+            // completion/return-later or study-complete.
+            var immediate = state.tasks.find(function (t) {
+              return t.type === "immediate";
+            });
+            if (immediate) {
+              openTask(immediate).catch(function () {
+                statusEl.className = "status err";
+                statusEl.textContent =
+                  "Your submission was recorded, but the next assessment could not be opened. Please return to the task list and try again.";
+                statusEl.hidden = false;
+              });
+              return;
+            }
+            if (status.has_future_assessments) {
+              showComplete(
+                "Part complete",
+                "You have completed this part. Please return later for the next assessment.",
+              );
+            } else {
+              showComplete(
+                "Study complete",
+                "You have completed the study. Thank you!",
+              );
+            }
+          })
+          .catch(function () {
+            statusEl.className = "status err";
+            statusEl.textContent =
+              "Your submission was recorded, but we could not refresh the task list. Please try again.";
+            statusEl.hidden = false;
+          });
       })
       .catch(function (err) {
         statusEl.className = "status err";
@@ -532,7 +569,7 @@
         }
       })
       .catch(function (err) {
-        var el = $("entry-error");
+        var el = $("material-error");
         showError(el, err.message || "Could not start the supported session.");
       });
   });
