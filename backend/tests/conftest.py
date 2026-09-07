@@ -66,7 +66,7 @@ def make_task(db_session, concept):
                 {"expression": "add(1,2)", "expected": 3},
             ]},
             scheduled_offset_days=offset_days,
-            version="0.3.0",
+            version="0.3.1",
         )
         db_session.add(t)
         db_session.commit()
@@ -83,7 +83,7 @@ def make_learner(db_session):
             condition=condition,
             measurement_arm="full",
             study_protocol_version="v0.3",
-            learning_module_version="v0.3.0",
+            learning_module_version="v0.4.0",
             system_prompt_version="0.2.0" if condition == "controlled_ai" else None,
             ai_provider="groq" if condition == "controlled_ai" else None,
             ai_model="fake-model" if condition == "controlled_ai" else None,

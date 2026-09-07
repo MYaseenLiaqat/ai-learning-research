@@ -148,56 +148,118 @@
   }
 
   function appendBasicMarkdown(parent, text) {
-    var codeBlock = null;
-    String(text || "")
-      .replace(/([^\n])\s+(?=#{1,6}\s+)/g, "$1\n")
-      .split("\n")
-      .forEach(function (line) {
-        if (line.trim().indexOf("```") === 0) {
-          if (codeBlock) {
-            parent.appendChild(codeBlock);
-            codeBlock = null;
-          } else {
-            codeBlock = document.createElement("pre");
-          }
-          return;
+    var lines = String(text || "").split("\n");
+    var codeLines = null;
+    var outputPending = false;
+
+    function appendInline(block, content) {
+      content.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).forEach(function (part) {
+        if (
+          part.indexOf("**") === 0 &&
+          part.lastIndexOf("**") === part.length - 2
+        ) {
+          var strong = document.createElement("strong");
+          strong.textContent = part.slice(2, -2);
+          block.appendChild(strong);
+        } else if (
+          part.indexOf("`") === 0 &&
+          part.lastIndexOf("`") === part.length - 1
+        ) {
+          var code = document.createElement("code");
+          code.textContent = part.slice(1, -1);
+          block.appendChild(code);
+        } else {
+          block.appendChild(document.createTextNode(part));
         }
-        if (codeBlock) {
-          codeBlock.textContent += (codeBlock.textContent ? "\n" : "") + line;
-          return;
-        }
-        if (!line.trim()) return;
-
-        var heading = line.match(/^(#{1,6})\s+(.+)$/);
-        var block = document.createElement(
-          heading ? "h" + heading[1].length : "p",
-        );
-        var content = heading ? heading[2] : line;
-        var parts = content.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
-
-        parts.forEach(function (part) {
-          if (
-            part.indexOf("**") === 0 &&
-            part.lastIndexOf("**") === part.length - 2
-          ) {
-            var strong = document.createElement("strong");
-            strong.textContent = part.slice(2, -2);
-            block.appendChild(strong);
-          } else if (
-            part.indexOf("`") === 0 &&
-            part.lastIndexOf("`") === part.length - 1
-          ) {
-            var code = document.createElement("code");
-            code.textContent = part.slice(1, -1);
-            block.appendChild(code);
-          } else {
-            block.appendChild(document.createTextNode(part));
-          }
-        });
-
-        parent.appendChild(block);
       });
-    if (codeBlock) parent.appendChild(codeBlock);
+    }
+
+    function appendTable(tableLines) {
+      var table = document.createElement("table");
+      var body = document.createElement("tbody");
+      tableLines.forEach(function (line, rowIndex) {
+        if (rowIndex === 1) return;
+        var row = document.createElement(rowIndex === 0 ? "thead" : "tbody");
+        var tr = document.createElement("tr");
+        line
+          .trim()
+          .slice(1, -1)
+          .split("|")
+          .forEach(function (cell) {
+            var cellEl = document.createElement(rowIndex === 0 ? "th" : "td");
+            appendInline(cellEl, cell.trim());
+            tr.appendChild(cellEl);
+          });
+        row.appendChild(tr);
+        table.appendChild(row);
+      });
+      table.className = "dry-run-table";
+      parent.appendChild(table);
+    }
+
+    for (var index = 0; index < lines.length; index += 1) {
+      var line = lines[index];
+      if (line.trim().indexOf("```") === 0) {
+        if (codeLines) {
+          var pre = document.createElement("pre");
+          pre.className = outputPending ? "material-output" : "material-code";
+          pre.textContent = codeLines.join("\n");
+          parent.appendChild(pre);
+          codeLines = null;
+          outputPending = false;
+        } else {
+          codeLines = [];
+        }
+        continue;
+      }
+      if (codeLines) {
+        codeLines.push(line);
+        continue;
+      }
+      if (
+        line.trim().indexOf("|") === 0 &&
+        index + 1 < lines.length &&
+        lines[index + 1].trim().indexOf("| ---") === 0
+      ) {
+        var tableLines = [line, lines[index + 1]];
+        index += 2;
+        while (index < lines.length && lines[index].trim().indexOf("|") === 0) {
+          tableLines.push(lines[index]);
+          index += 1;
+        }
+        index -= 1;
+        appendTable(tableLines);
+        continue;
+      }
+      if (!line.trim()) continue;
+
+      var heading = line.match(/^(#{1,6})\s+(.+)$/);
+      var block = document.createElement(
+        heading ? "h" + heading[1].length : "p",
+      );
+      if (heading)
+        block.className =
+          heading[1].length === 1 ? "lesson-heading" : "lesson-subheading";
+      var content = heading ? heading[2] : line;
+      if (
+        /^\*\*(Quick check|What is happening\?|Output|Comparison key|The key difference)\*\*/.test(
+          content,
+        )
+      ) {
+        block.className = "material-callout";
+      }
+      if (/^\*\*Output\*\*/.test(content)) outputPending = true;
+      appendInline(block, content);
+      parent.appendChild(block);
+    }
+    if (codeLines) {
+      var unfinished = document.createElement("pre");
+      unfinished.className = outputPending
+        ? "material-output"
+        : "material-code";
+      unfinished.textContent = codeLines.join("\n");
+      parent.appendChild(unfinished);
+    }
   }
 
   // ---- Rendering: learning material ----
@@ -411,11 +473,13 @@
       code: code,
     })
       .then(function (result) {
-        statusEl.className = "status ok";
-        statusEl.textContent = result.passed
-          ? "Submitted successfully."
-          : "Submitted. Score: " + result.score;
+        statusEl.className = "status";
+        statusEl.textContent = "Response recorded.";
         $("submit-btn").disabled = true;
+        // Keep the neutral confirmation visible before automatic progression.
+        return new Promise(function (resolve) {
+          setTimeout(resolve, 500);
+        }).then(function () {
         // Refresh tasks to reflect unlock of next phase.
         return loadTasks()
           .then(function () {
@@ -455,6 +519,7 @@
               "Your submission was recorded, but we could not refresh the task list. Please try again.";
             statusEl.hidden = false;
           });
+        });
       })
       .catch(function (err) {
         statusEl.className = "status err";
@@ -575,6 +640,16 @@
   });
 
   $("submit-btn").addEventListener("click", submitCurrent);
+
+  $("code-input").addEventListener("keydown", function (e) {
+    if (e.key !== "Tab") return;
+    e.preventDefault();
+    var start = this.selectionStart;
+    var end = this.selectionEnd;
+    this.value = this.value.slice(0, start) + "    " + this.value.slice(end);
+    this.selectionStart = start + 4;
+    this.selectionEnd = start + 4;
+  });
 
   $("back-btn").addEventListener("click", function () {
     stopTimer();

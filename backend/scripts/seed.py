@@ -1,6 +1,6 @@
 from app.models import Concept, Task
 
-TASK_VERSION = "0.3.0"
+TASK_VERSION = "0.3.1"
 
 
 def seed(db):
@@ -125,8 +125,8 @@ def seed(db):
                 "The platform already provides a variable named `hours` containing:\n"
                 "[5, 12, 8, 17, 9, 14]\n\n"
                 "Do not redefine `hours`.\n\n"
-                "Write Python code that sets `result` to the total number of overtime hours "
-                "across all shifts that last at least 10 hours. If no shift qualifies, set `result` to 0."
+                "A long shift is a shift that lasts at least 10 hours. Write Python code that sets `result` "
+                "to the total hours worked across all long shifts. If no shift qualifies, set `result` to 0."
             ),
             grading_spec={
                 "mode": "exec_result",

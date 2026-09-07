@@ -20,6 +20,43 @@ body {
 
 h1, h2, h3 { color: #111; }
 
+.lesson-heading {
+  margin: 28px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #2563eb;
+  font-size: 1.65rem;
+}
+.lesson-subheading { margin: 22px 0 8px; font-size: 1.2rem; }
+.material-callout {
+  margin: 18px 0 6px;
+  color: #174ea6;
+  font-weight: 700;
+}
+.material-code, .material-output { margin: 10px 0 16px; }
+.material-code { background: #172033; border-color: #172033; color: #f8fafc; }
+.material-output {
+  background: #ecfdf5;
+  border-color: #86efac;
+  color: #166534;
+}
+.dry-run-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 18px;
+  background: #fff;
+  font-size: 0.95rem;
+}
+.dry-run-table th, .dry-run-table td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.dry-run-table th { background: #e8f0fe; font-weight: 700; }
+@media (max-width: 600px) {
+  .dry-run-table { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
 .muted { color: #6b7280; }
 .error { color: #b91c1c; }
 .status { margin-top: 12px; font-weight: 500; }

@@ -4,9 +4,9 @@ from scripts.seed import TASK_VERSION, seed
 from app.models import Task
 
 
-def test_seeded_tasks_use_version_030(db_session):
+def test_seeded_tasks_use_version_031(db_session):
     seed(db_session)
-    assert {t.version for t in db_session.query(Task).all()} == {"0.3.0"}
+    assert {t.version for t in db_session.query(Task).all()} == {"0.3.1"}
 
 
 def test_criterion_differs_from_delayed_and_remains_within_loop_construct(db_session):
@@ -18,12 +18,25 @@ def test_criterion_differs_from_delayed_and_remains_within_loop_construct(db_ses
     assert "hours" in criterion_prompt
     assert "transactions" not in criterion_prompt
     assert "strictly greater than 1000" not in criterion_prompt
-    assert "greater than or equal to 10" in criterion_prompt or "at least 10 hours" in criterion_prompt
+    assert criterion_prompt.startswith(
+        "The platform already provides a variable named `hours` containing:"
+    )
+    assert "A long shift is a shift that lasts at least 10 hours." in criterion_prompt
+    assert "total hours worked across all long shifts" in criterion_prompt
+    assert "overtime hours" not in criterion_prompt
     assert "platform already provides a variable named" in criterion_prompt
     assert "Do not redefine" in criterion_prompt
     assert "result" in criterion_prompt
     assert "delayed" in delayed_prompt.lower() or "prices" in delayed_prompt
     assert "criterion" not in criterion_prompt.lower()
+
+
+def test_criterion_hidden_expected_values_remain_unchanged(db_session):
+    seed(db_session)
+    criterion = db_session.query(Task).filter_by(type="criterion").one()
+    assert [case["expected"] for case in criterion.grading_spec["tests"]] == [
+        43, 0, 0, 10, 20, 22
+    ]
 
 
 def test_assessment_prompts_do_not_expose_expected_answers(db_session):

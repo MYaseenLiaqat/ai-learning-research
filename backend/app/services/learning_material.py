@@ -61,7 +61,7 @@ LEGACY_LOOPS_MODULE_V020 = {
     ],
 }
 
-LOOPS_MODULE = {
+LEGACY_LOOPS_MODULE_V030 = {
     "module_id": "loops",
     "version": "v0.3.0",
     "explanation": (
@@ -178,9 +178,125 @@ LOOPS_MODULE = {
     ],
 }
 
+LOOPS_MODULE = {
+    "module_id": "loops",
+    "version": "v0.4.0",
+    "explanation": (
+        "# Lesson 1: How a for loop actually runs\n\n"
+        "A for loop takes values from a list one at a time. The indented code runs once for each value.\n\n"
+        "```python\n"
+        "numbers = [10, 20, 30]\n\n"
+        "for number in numbers:\n"
+        "    print(number)\n"
+        "```\n\n"
+        "**What is happening?** `for` starts the loop. `number` holds the current value and could have another meaningful name. `numbers` is the list being visited. Python handles moving to the next item automatically.\n\n"
+        "**Output**\n\n"
+        "```text\n10\n20\n30\n```\n\n"
+        "**Dry run**\n\n"
+        "| iteration | list position | current value | code executed | output |\n| --- | --- | --- | --- | --- |\n| 1 | 0 | 10 | `print(number)` | 10 |\n| 2 | 1 | 20 | `print(number)` | 20 |\n| 3 | 2 | 30 | `print(number)` | 30 |\n\n"
+        "Python starts with 10, stores it in `number`, and runs the indented body. Only after the body finishes does it take 20, then 30. After 30 there is no next item, so the loop stops by itself and Python runs the code after the loop.\n\n"
+        "**Quick check**\n\n"
+        "When the loop runs for the second time, what value is stored in `number`?\n\n"
+        "# Lesson 2: Conditions inside a loop\n\n"
+        "An `if` inside a loop lets Python decide what to do with each current value. For each item: get the value, check the condition, run the `if` block when it is True, skip it when it is False, then move to the next value. The loop stops when no values remain.\n\n"
+        "```python\n"
+        "numbers = [10, 25, 15]\n\n"
+        "for number in numbers:\n"
+        "    if number > 20:\n"
+        "        print(number)\n"
+        "```\n\n"
+        "**Dry run**\n\n"
+        "Iteration 1: `number = 10`; `10 > 20` is False, so Python skips the `if` block. Nothing is printed.\n\n"
+        "Iteration 2: `number = 25`; `25 > 20` is True, so Python enters the block and prints 25.\n\n"
+        "Iteration 3: `number = 15`; `15 > 20` is False, so Python skips the block. No values remain, so the loop ends.\n\n"
+        "| iteration | current value | condition | action | output |\n| --- | --- | --- | --- | --- |\n| 1 | 10 | False | skip print | none |\n| 2 | 25 | True | run print | 25 |\n| 3 | 15 | False | skip print | none |\n\n"
+        "**Comparison key**\n\n"
+        "`>` means greater than; `>=` means greater than or equal to; `<` means less than; `<=` means less than or equal to.\n\n"
+        "**Quick check**\n\n"
+        "Which values would be printed, and why?\n\n"
+        "# Lesson 3: Building a result\n\n"
+        "## Part A: Counting\n\n"
+        "We can count how many values match a condition. Before checking anything, the count is zero, so `result = 0` comes before the loop.\n\n"
+        "```python\n"
+        "numbers = [10, 25, 40, 15]\n\n"
+        "result = 0\n\n"
+        "for number in numbers:\n"
+        "    if number > 20:\n"
+        "        result += 1\n"
+        "```\n\n"
+        "**Why `result += 1`?** It means `result = result + 1`. Each matching value increases the count by one. A value that does not match leaves the count unchanged.\n\n"
+        "| value | condition | result after this value |\n| --- | --- | --- |\n| start | - | 0 |\n| 10 | False | 0 |\n| 25 | True | 1 |\n| 40 | True | 2 |\n| 15 | False | 2 |\n\n"
+        "Final `result = 2`: two values matched.\n\n"
+        "## Part B: Summation\n\n"
+        "This time we add the actual matching values. We start from 0 because we are doing addition.\n\n"
+        "```python\n"
+        "prices = [500, 1200, 800, 1500]\n\n"
+        "result = 0\n\n"
+        "for price in prices:\n"
+        "    if price > 1000:\n"
+        "        result += price\n"
+        "```\n\n"
+        "The dry run is: 500 is False, so result is 0; 1200 is True, so result is `0 + 1200 = 1200`; 800 is False, so it stays 1200; 1500 is True, so it becomes `1200 + 1500 = 2700`.\n\n"
+        "**The key difference**\n\n"
+        "| counting | summing |\n| --- | --- |\n| `result += 1` | `result += price` |\n| add one because one value matched | add the matching value itself |\n\n"
+        "# Practice\n\n"
+        "## Guided practice\n\n"
+        "Fill in the blanks. Count how many stock levels are strictly less than 5.\n\n"
+        "```python\n"
+        "stock_levels = [3, 8, 2, 6, 1]\n\n"
+        "result = ___\n\n"
+        "for value in stock_levels:\n"
+        "    if value ___ 5:\n"
+        "        result ___ 1\n"
+        "```\n\n"
+        "What final value should `result` have?\n\n"
+        "## Mini-practice\n\n"
+        "Without running it, which temperatures are printed, and how many are there?\n\n"
+        "```python\n"
+        "temperatures = [18, 25, 12, 30]\n\n"
+        "for temperature in temperatures:\n"
+        "    if temperature >= 20:\n"
+        "        print(temperature)\n"
+        "```"
+    ),
+    "worked_example": {
+        "problem": "Count how many values are strictly greater than 20.",
+        "input": "numbers = [10, 25, 40, 15]",
+        "reasoning": "Read Lesson 3 Part A and dry-run each value.",
+        "solution": "result = 0\nfor number in numbers:\n    if number > 20:\n        result += 1\nprint(result)",
+        "expected_result": 2,
+    },
+    "guided_practice": {
+        "problem": (
+            "Fill the blanks to count stock levels strictly less than 5.\n\n"
+            "```python\n"
+            "stock_levels = [3, 8, 2, 6, 1]\n"
+            "result = ___\n"
+            "for value in stock_levels:\n"
+            "    if value ___ 5:\n"
+            "        result ___ 1\n"
+            "```\n\n"
+            "What final value should `result` have?"
+        ),
+        "expected_result": 3,
+        "note": "This is scaffolded guided practice and is not a primary outcome.",
+    },
+    "mini_practice": {
+        "problem": "Reason through the temperature loop in Lesson 3.",
+        "example": "temperatures = [18, 25, 12, 30]",
+        "hint": "Check each value against 20 and write the matching outputs in order.",
+    },
+    "static_hints": [
+        "Start with the first list value and write the current variable value.",
+        "Check the condition before deciding what the indented code does.",
+        "For counting add 1; for summing add the matching value.",
+    ],
+}
+
 MODULE_REGISTRY = {
     "v0.2.0": LEGACY_LOOPS_MODULE_V020,
-    "v0.3.0": LOOPS_MODULE,
+    "v0.3.0": LEGACY_LOOPS_MODULE_V030,
+    "v0.4.0": LOOPS_MODULE,
 }
 
 
