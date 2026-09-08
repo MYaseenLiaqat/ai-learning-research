@@ -40,6 +40,7 @@ def test_new_learner_freezes_provenance(client, db_session, monkeypatch):
     assert learner["ai_interaction_cap"] == 8
     assert learner["supported_phase_minutes"] == 20
     assert learner["participation_status"] == "active"
+    assert learner["measurement_arm"] == "full"
 
 
 def test_no_ai_learner_freezes_non_ai_provenance_without_ai_config(
