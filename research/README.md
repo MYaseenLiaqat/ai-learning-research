@@ -9,7 +9,7 @@ This folder contains historical and current research specifications for the AI-a
 |---|---:|---|
 | Study protocol | v0.4 | `protocol_v0.4.md` |
 | Loops learning module | v0.4.0 | `loops_learning_module_v0.4.md` + backend registry |
-| Loops task instrument | 0.3.1 | `loops_task_instrument_v0.3.1.md` + `backend/scripts/seed.py` |
+| Loops task instrument | 0.4.0 | `loops_task_instrument_v0.4.0.md` + `backend/scripts/seed.py` |
 | AI tutor policy | v0.3 / prompt 0.3.0 | `ai_tutor_policy_v0.3.md` + backend registry |
 | Prerequisite screener | v0.3 | `loops_prerequisite_screener_v0.3.md` |
 | Pilot timing clarification | v0.3 | `pilot_protocol_clarification_v0.3.md` |
@@ -35,7 +35,7 @@ Protocol, learning module, task instrument, system prompt, grader, and screener 
 Current combination:
 - protocol v0.4
 - learning module v0.4.0
-- task instrument 0.3.1
+- task instrument 0.4.0
 - system prompt 0.3.0
 - grader 0.1.0
 - screener v0.3
