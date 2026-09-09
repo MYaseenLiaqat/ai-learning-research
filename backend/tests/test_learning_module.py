@@ -5,7 +5,7 @@ def test_learning_module_retrieval(client, make_learner):
     assert resp.status_code == 200
     data = resp.json()
     assert data["module_id"] == "loops"
-    assert data["version"] == "v0.4.0"
+    assert data["version"] == "v0.5.0"
     assert "explanation" in data
     assert "worked_example" in data
     assert "guided_practice" in data
@@ -43,7 +43,7 @@ def test_new_lessons_and_practice_are_instructional(client, make_learner):
     assert explanation.count("# Lesson") == 3
     assert "Dry run" in explanation
     assert "result += 1" in explanation
-    assert "result += price" in explanation
+    assert "result += number" in explanation
     assert "mini_practice" in content
 
 
@@ -53,12 +53,13 @@ def test_learning_module_keeps_historical_versions():
     assert get_learning_module("v0.2.0")["version"] == "v0.2.0"
     assert get_learning_module("v0.3.0")["version"] == "v0.3.0"
     assert get_learning_module("v0.4.0")["version"] == "v0.4.0"
+    assert get_learning_module("v0.5.0")["version"] == "v0.5.0"
 
 
 def test_learning_content_stays_within_allowed_constructs():
     from app.services.learning_material import get_learning_module
 
-    content = get_learning_module("v0.4.0")["explanation"].lower()
+    content = get_learning_module("v0.5.0")["explanation"].lower()
     forbidden = [
         "range(", "enumerate(", "break", "continue", "pass", "nested",
         "list comprehension", "dictionary", "function", "recursion", "library",

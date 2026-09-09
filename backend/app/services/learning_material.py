@@ -293,10 +293,93 @@ LOOPS_MODULE = {
     ],
 }
 
+LEGACY_LOOPS_MODULE_V040 = LOOPS_MODULE
+
+LOOPS_MODULE_V050 = {
+    "module_id": "loops",
+    "version": "v0.5.0",
+    "explanation": (
+        "# Lesson 1: The iterator and execution order\n\n"
+        "A `for` loop takes the next value from a sequence, stores it in the iterator variable, and runs the indented body. When the body finishes, Python takes the next value. The iterator variable is the current item for that iteration; it is replaced on the next iteration. After the last item, the loop ends automatically.\n\n"
+        "```python\n"
+        "numbers = [10, 20, 30]\n\n"
+        "for number in numbers:\n"
+        "    print(number)\n"
+        "```\n\n"
+        "Dry-run table:\n\n"
+        "**Dry run**\n\n| iteration | position | current value | body action | output |\n| --- | --- | --- | --- | --- |\n| 1 | 0 | 10 | print 10 | 10 |\n| 2 | 1 | 20 | print 20 | 20 |\n| 3 | 2 | 30 | print 30 | 30 |\n\n"
+        "The loop variable holds the current value. It is not a counter.\n\n"
+        "# Lesson 2: Conditions and execution tracing\n\n"
+        "Trace each iteration in this order: get the current value, evaluate the comparison, run or skip the `if` block, update state if needed, then move to the next value. Indentation determines which statements belong to the loop and condition.\n\n"
+        "```python\n"
+        "numbers = [10, 25, 15]\n\n"
+        "for number in numbers:\n"
+        "    if number > 20:\n"
+        "        print(number)\n"
+        "```\n\n"
+        "| iteration | current value | comparison | block | output |\n| --- | --- | --- | --- | --- |\n| 1 | 10 | False | skipped | none |\n| 2 | 25 | True | runs | 25 |\n| 3 | 15 | False | skipped | none |\n\n"
+        "Use `>`, `>=`, `<`, and `<=` exactly as the task wording requires.\n\n"
+        "# Lesson 3: Counters and accumulators\n\n"
+        "First decide what `result` represents and initialize it before the loop. A counter answers how many values qualify, so it starts at 0 and uses `result += 1` for each match. This means `result = result + 1`.\n\n"
+        "```python\n"
+        "result = 0\n"
+        "for number in numbers:\n"
+        "    if number > 20:\n"
+        "        result += 1\n"
+        "```\n\n"
+        "| current value | qualifies? | state before | update | state after |\n| --- | --- | ---: | --- | ---: |\n| start | - | 0 | none | 0 |\n| 10 | no | 0 | none | 0 |\n| 25 | yes | 0 | add 1 | 1 |\n| 40 | yes | 1 | add 1 | 2 |\n| 15 | no | 2 | none | 2 |\n\n"
+        "An accumulator answers what total the qualifying values make, so it also starts at 0 but uses `result += number` or the task's current value. It adds the value itself, not one.\n\n"
+        "| current value | qualifies? | total before | update | total after |\n| --- | --- | ---: | --- | ---: |\n| start | - | 0 | none | 0 |\n| 500 | no | 0 | none | 0 |\n| 1200 | yes | 0 | add 1200 | 1200 |\n| 800 | no | 1200 | none | 1200 |\n| 1500 | yes | 1200 | add 1500 | 2700 |\n\n"
+        "Choose a counter when the answer is a number of matches. Choose an accumulator when the answer is a total. In a dry run, record the current value, condition, state before the update, update, and state after the update.\n\n"
+        "# Practice\n\n"
+        "Use fill-in-the-blank practice and short dry-run tables.\n\n"
+        "```python\n"
+        "stock_levels = [3, 8, 2, 6, 1]\n"
+        "result = ___\n"
+        "for value in stock_levels:\n"
+        "    if value ___ 5:\n"
+        "        result ___ 1\n"
+        "```\n\n"
+        "These activities are instructional and not primary outcomes."
+    ),
+    "worked_example": {
+        "problem": "Count how many values are strictly greater than 20.",
+        "input": "numbers = [10, 25, 40, 15]",
+        "reasoning": "Trace each value, condition, and counter update.",
+        "solution": "result = 0\nfor number in numbers:\n    if number > 20:\n        result += 1",
+        "expected_result": 2,
+    },
+    "guided_practice": {
+        "problem": (
+            "Fill the blanks to count values in `stock_levels` strictly less than 5.\n\n"
+            "```python\n"
+            "stock_levels = [3, 8, 2, 6, 1]\n"
+            "result = ___\n"
+            "for value in stock_levels:\n"
+            "    if value ___ 5:\n"
+            "        result ___ 1\n"
+            "```"
+        ),
+        "expected_result": 3,
+        "note": "Instructional practice, not a primary outcome.",
+    },
+    "mini_practice": {
+        "problem": "Dry-run a loop and identify whether its state is a counter or accumulator.",
+        "example": "observations = [12, 7, 9, 15, 4]",
+        "hint": "Write the current value, condition, and state after every iteration.",
+    },
+    "static_hints": [
+        "Name what result should represent before the loop.",
+        "Trace the current value and condition for each iteration.",
+        "Add one for a count; add the current value for a total.",
+    ],
+}
+
 MODULE_REGISTRY = {
     "v0.2.0": LEGACY_LOOPS_MODULE_V020,
     "v0.3.0": LEGACY_LOOPS_MODULE_V030,
-    "v0.4.0": LOOPS_MODULE,
+    "v0.4.0": LEGACY_LOOPS_MODULE_V040,
+    "v0.5.0": LOOPS_MODULE_V050,
 }
 
 

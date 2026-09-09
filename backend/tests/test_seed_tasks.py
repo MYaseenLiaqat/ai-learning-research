@@ -4,9 +4,9 @@ from scripts.seed import TASK_VERSION, seed
 from app.models import Task
 
 
-def test_seeded_tasks_use_version_031(db_session):
+def test_seeded_tasks_use_version_040(db_session):
     seed(db_session)
-    assert {t.version for t in db_session.query(Task).all()} == {"0.3.1"}
+    assert {t.version for t in db_session.query(Task).all()} == {"0.4.0"}
 
 
 def test_criterion_differs_from_delayed_and_remains_within_loop_construct(db_session):
@@ -15,19 +15,17 @@ def test_criterion_differs_from_delayed_and_remains_within_loop_construct(db_ses
     delayed_prompt = tasks["delayed"].prompt_text
     criterion_prompt = tasks["criterion"].prompt_text
 
-    assert "hours" in criterion_prompt
-    assert "transactions" not in criterion_prompt
+    assert "transactions" in criterion_prompt
     assert "strictly greater than 1000" not in criterion_prompt
     assert criterion_prompt.startswith(
-        "The platform already provides a variable named `hours` containing:"
+        "The platform already provides a variable named `transactions` containing:"
     )
-    assert "A long shift is a shift that lasts at least 10 hours." in criterion_prompt
-    assert "total hours worked across all long shifts" in criterion_prompt
-    assert "overtime hours" not in criterion_prompt
+    assert "at least 100" in criterion_prompt
+    assert "counter and an accumulator" in criterion_prompt
     assert "platform already provides a variable named" in criterion_prompt
     assert "Do not redefine" in criterion_prompt
     assert "result" in criterion_prompt
-    assert "delayed" in delayed_prompt.lower() or "prices" in delayed_prompt
+    assert "ages" in delayed_prompt
     assert "criterion" not in criterion_prompt.lower()
 
 
@@ -35,7 +33,7 @@ def test_criterion_hidden_expected_values_remain_unchanged(db_session):
     seed(db_session)
     criterion = db_session.query(Task).filter_by(type="criterion").one()
     assert [case["expected"] for case in criterion.grading_spec["tests"]] == [
-        43, 0, 0, 10, 20, 22
+        420, 0, 0, 100, 200, 201
     ]
 
 
@@ -52,9 +50,9 @@ def test_loops_prompts_explicitly_forbid_redefining_provided_input(db_session):
     expected = {
         "supported": "temperatures",
         "immediate": "scores",
-        "delayed": "prices",
-        "transfer": "readings",
-        "criterion": "hours",
+        "delayed": "ages",
+        "transfer": "prices",
+        "criterion": "transactions",
     }
     seed(db_session)
     tasks = db_session.query(Task).all()

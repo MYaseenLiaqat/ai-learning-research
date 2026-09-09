@@ -1,6 +1,6 @@
 from app.models import Concept, Task
 
-TASK_VERSION = "0.3.1"
+TASK_VERSION = "0.4.0"
 
 
 def seed(db):
@@ -13,7 +13,7 @@ def seed(db):
     concepts = {c.name: c for c in db.query(Concept).all()}
 
     if db.query(Task).count() == 0:
-        # Loops pilot tasks per research/loops_learning_module_v0.2.md
+        # Loops pilot tasks per research/loops_task_instrument_v0.4.0.md
         # All tasks use the provided-input + `result` variable contract.
         db.add_all([
         Task(
@@ -71,6 +71,31 @@ def seed(db):
             type="delayed",
             version=TASK_VERSION,
             prompt_text=(
+                "The platform already provides a variable named `ages` containing:\n"
+                "[12, 18, 7, 21, 16, 30]\n\n"
+                "Do not redefine `ages`.\n\n"
+                "Write Python code that sets `result` to the number of ages "
+                "strictly less than 18."
+            ),
+            grading_spec={
+                "mode": "exec_result",
+                "result_var": "result",
+                "tests": [
+                    {"inputs": {"ages": [12, 18, 7, 21, 16, 30]}, "expected": 3},
+                    {"inputs": {"ages": []}, "expected": 0},
+                    {"inputs": {"ages": [18]}, "expected": 0},
+                    {"inputs": {"ages": [17]}, "expected": 1},
+                    {"inputs": {"ages": [5, 10, 15]}, "expected": 3},
+                    {"inputs": {"ages": [20, 30]}, "expected": 0},
+                ],
+            },
+            scheduled_offset_days=7,
+        ),
+        Task(
+            concept_id=concepts["Loops"].id,
+            type="transfer",
+            version=TASK_VERSION,
+            prompt_text=(
                 "The platform already provides a variable named `prices` containing:\n"
                 "[450, 1200, 850, 1700, 999, 1500]\n\n"
                 "Do not redefine `prices`.\n\n"
@@ -89,32 +114,6 @@ def seed(db):
                     {"inputs": {"prices": [500, 600]}, "expected": 0},
                 ],
             },
-            scheduled_offset_days=7,
-        ),
-        Task(
-            concept_id=concepts["Loops"].id,
-            type="transfer",
-            version=TASK_VERSION,
-            prompt_text=(
-                "The platform already provides a variable named `readings` containing:\n"
-                "[18, 42, 29, 51, 33]\n\n"
-                "Do not redefine `readings`.\n\n"
-                "Write Python code that sets `result` to the total amount by which readings "
-                "above 30 exceed 30. For example, a reading of 42 contributes 12 because "
-                "42 - 30 = 12."
-            ),
-            grading_spec={
-                "mode": "exec_result",
-                "result_var": "result",
-                "tests": [
-                    {"inputs": {"readings": [18, 42, 29, 51, 33]}, "expected": 36},
-                    {"inputs": {"readings": []}, "expected": 0},
-                    {"inputs": {"readings": [30, 30]}, "expected": 0},
-                    {"inputs": {"readings": [31, 31]}, "expected": 2},
-                    {"inputs": {"readings": [40, 20, 50]}, "expected": 30},
-                    {"inputs": {"readings": [10, 20]}, "expected": 0},
-                ],
-            },
             scheduled_offset_days=14,
         ),
         Task(
@@ -122,22 +121,23 @@ def seed(db):
             type="criterion",
             version=TASK_VERSION,
             prompt_text=(
-                "The platform already provides a variable named `hours` containing:\n"
-                "[5, 12, 8, 17, 9, 14]\n\n"
-                "Do not redefine `hours`.\n\n"
-                "A long shift is a shift that lasts at least 10 hours. Write Python code that sets `result` "
-                "to the total hours worked across all long shifts. If no shift qualifies, set `result` to 0."
+                "The platform already provides a variable named `transactions` containing:\n"
+                "[50, 120, 75, 200, 100, 25]\n\n"
+                "Do not redefine `transactions`.\n\n"
+                "For every transaction at least 100, count it and add its value to a running total. "
+                "Write Python code that sets `result` to the total value of qualifying transactions. "
+                "Use a counter and an accumulator while solving the task."
             ),
             grading_spec={
                 "mode": "exec_result",
                 "result_var": "result",
                 "tests": [
-                    {"inputs": {"hours": [5, 12, 8, 17, 9, 14]}, "expected": 43},
-                    {"inputs": {"hours": []}, "expected": 0},
-                    {"inputs": {"hours": [9, 8, 7]}, "expected": 0},
-                    {"inputs": {"hours": [10]}, "expected": 10},
-                    {"inputs": {"hours": [10, 10]}, "expected": 20},
-                    {"inputs": {"hours": [9, 10, 12]}, "expected": 22},
+                    {"inputs": {"transactions": [50, 120, 75, 200, 100, 25]}, "expected": 420},
+                    {"inputs": {"transactions": []}, "expected": 0},
+                    {"inputs": {"transactions": [99, 80]}, "expected": 0},
+                    {"inputs": {"transactions": [100]}, "expected": 100},
+                    {"inputs": {"transactions": [100, 100]}, "expected": 200},
+                    {"inputs": {"transactions": [99, 100, 101]}, "expected": 201},
                 ],
             },
             scheduled_offset_days=21,

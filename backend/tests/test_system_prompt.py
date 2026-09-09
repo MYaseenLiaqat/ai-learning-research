@@ -6,10 +6,11 @@ from app.routers.ai import (
 )
 
 
-def test_system_prompt_version_is_030_and_020_remains_resolvable():
-    assert SYSTEM_PROMPT_VERSION == "0.3.0"
+def test_system_prompt_version_is_040_and_historical_versions_remain_resolvable():
+    assert SYSTEM_PROMPT_VERSION == "0.4.0"
     assert get_system_prompt("0.2.0") == SYSTEM_PROMPT_REGISTRY["0.2.0"]
-    assert get_system_prompt("0.3.0") == SYSTEM_PROMPT
+    assert get_system_prompt("0.3.0") == SYSTEM_PROMPT_REGISTRY["0.3.0"]
+    assert get_system_prompt("0.4.0") == SYSTEM_PROMPT
 
 
 def test_system_prompt_permits_loop_constructs():
@@ -52,14 +53,14 @@ def test_system_prompt_allows_concepts_hints_tracing_and_analogies():
         "targeted hints",
         "tracing",
         "dry-run reasoning",
-        "analogous examples using different variables, values, or context",
+        "analogous examples with different variables, values, or context",
     ]:
         assert term in SYSTEM_PROMPT
 
 
 def test_system_prompt_does_not_redefine_provided_inputs():
     assert "Do not redefine a provided input" in SYSTEM_PROMPT
-    assert "operate on the input variables exactly as\nprovided by the platform" in SYSTEM_PROMPT
+    assert "platform-provided input variables" in SYSTEM_PROMPT
 
 
 def test_system_prompt_keeps_fixed_tutoring_policy():
