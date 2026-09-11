@@ -1,6 +1,6 @@
 from app.models import Concept, Task
 
-TASK_VERSION = "0.4.0"
+TASK_VERSION = "0.5.0"
 
 
 def seed(db):
@@ -13,7 +13,7 @@ def seed(db):
     concepts = {c.name: c for c in db.query(Concept).all()}
 
     if db.query(Task).count() == 0:
-        # Loops pilot tasks per research/loops_task_instrument_v0.4.0.md
+        # Loops pilot tasks per research/loops_task_instrument_v0.5.0.md
         # All tasks use the provided-input + `result` variable contract.
         db.add_all([
         Task(
@@ -96,22 +96,22 @@ def seed(db):
             type="transfer",
             version=TASK_VERSION,
             prompt_text=(
-                "The platform already provides a variable named `prices` containing:\n"
-                "[450, 1200, 850, 1700, 999, 1500]\n\n"
-                "Do not redefine `prices`.\n\n"
-                "Write Python code that sets `result` to the total price of products "
-                "strictly more than 1000."
+                "The platform already provides a variable named `scores` containing:\n"
+                "[72, 91, 64, 88, 79]\n\n"
+                "Do not redefine `scores`.\n\n"
+                "Write Python code that sets `result` to the largest score. "
+                "If the list is empty, set `result` to 0."
             ),
             grading_spec={
                 "mode": "exec_result",
                 "result_var": "result",
                 "tests": [
-                    {"inputs": {"prices": [450, 1200, 850, 1700, 999, 1500]}, "expected": 4400},
-                    {"inputs": {"prices": []}, "expected": 0},
-                    {"inputs": {"prices": [1000]}, "expected": 0},
-                    {"inputs": {"prices": [1001]}, "expected": 1001},
-                    {"inputs": {"prices": [1200, 1200]}, "expected": 2400},
-                    {"inputs": {"prices": [500, 600]}, "expected": 0},
+                    {"inputs": {"scores": [72, 91, 64, 88, 79]}, "expected": 91},
+                    {"inputs": {"scores": []}, "expected": 0},
+                    {"inputs": {"scores": [42]}, "expected": 42},
+                    {"inputs": {"scores": [75, 75]}, "expected": 75},
+                    {"inputs": {"scores": [10, 99, 30]}, "expected": 99},
+                    {"inputs": {"scores": [0, 1]}, "expected": 1},
                 ],
             },
             scheduled_offset_days=14,
@@ -121,23 +121,22 @@ def seed(db):
             type="criterion",
             version=TASK_VERSION,
             prompt_text=(
-                "The platform already provides a variable named `transactions` containing:\n"
-                "[50, 120, 75, 200, 100, 25]\n\n"
-                "Do not redefine `transactions`.\n\n"
-                "For every transaction at least 100, count it and add its value to a running total. "
-                "Write Python code that sets `result` to the total value of qualifying transactions. "
-                "Use a counter and an accumulator while solving the task."
+                "The platform already provides a variable named `activity` containing:\n"
+                "[\"yes\", \"yes\", \"no\", \"yes\", \"yes\", \"yes\", \"no\"]\n\n"
+                "Do not redefine `activity`.\n\n"
+                "Write Python code that sets `result` to the length of the longest consecutive "
+                "streak of \"yes\" values. Use a current-streak state and a best-streak state."
             ),
             grading_spec={
                 "mode": "exec_result",
                 "result_var": "result",
                 "tests": [
-                    {"inputs": {"transactions": [50, 120, 75, 200, 100, 25]}, "expected": 420},
-                    {"inputs": {"transactions": []}, "expected": 0},
-                    {"inputs": {"transactions": [99, 80]}, "expected": 0},
-                    {"inputs": {"transactions": [100]}, "expected": 100},
-                    {"inputs": {"transactions": [100, 100]}, "expected": 200},
-                    {"inputs": {"transactions": [99, 100, 101]}, "expected": 201},
+                    {"inputs": {"activity": ["yes", "yes", "no", "yes", "yes", "yes", "no"]}, "expected": 3},
+                    {"inputs": {"activity": []}, "expected": 0},
+                    {"inputs": {"activity": ["no", "no"]}, "expected": 0},
+                    {"inputs": {"activity": ["yes"]}, "expected": 1},
+                    {"inputs": {"activity": ["yes", "yes"]}, "expected": 2},
+                    {"inputs": {"activity": ["yes", "no", "yes", "yes"]}, "expected": 2},
                 ],
             },
             scheduled_offset_days=21,

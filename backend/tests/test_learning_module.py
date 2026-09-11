@@ -5,7 +5,7 @@ def test_learning_module_retrieval(client, make_learner):
     assert resp.status_code == 200
     data = resp.json()
     assert data["module_id"] == "loops"
-    assert data["version"] == "v0.5.0"
+    assert data["version"] == "v0.6.0"
     assert "explanation" in data
     assert "worked_example" in data
     assert "guided_practice" in data
@@ -32,18 +32,18 @@ def test_guided_practice_is_scaffolded(client, make_learner):
     content = resp.json()["guided_practice"]["problem"]
 
     assert "___" in content
-    assert "for value in stock_levels" in content
-    assert "if value" in content
-    assert "result" in content
+    assert "for item in activity" in content
+    assert "if item == \"yes\"" in content
+    assert "current" in content
 
 
 def test_new_lessons_and_practice_are_instructional(client, make_learner):
     content = client.get(f"/learning/loops?learner_id={make_learner().id}").json()
     explanation = content["explanation"]
-    assert explanation.count("# Lesson") == 3
-    assert "Dry run" in explanation
-    assert "result += 1" in explanation
-    assert "result += number" in explanation
+    assert explanation.count("# Lesson") == 4
+    assert "maximum" in explanation.lower()
+    assert "current streak" in explanation.lower()
+    assert "best streak" in explanation.lower()
     assert "mini_practice" in content
 
 
@@ -54,15 +54,17 @@ def test_learning_module_keeps_historical_versions():
     assert get_learning_module("v0.3.0")["version"] == "v0.3.0"
     assert get_learning_module("v0.4.0")["version"] == "v0.4.0"
     assert get_learning_module("v0.5.0")["version"] == "v0.5.0"
+    assert get_learning_module("v0.6.0")["version"] == "v0.6.0"
 
 
 def test_learning_content_stays_within_allowed_constructs():
     from app.services.learning_material import get_learning_module
 
-    content = get_learning_module("v0.5.0")["explanation"].lower()
+    content = get_learning_module("v0.6.0")["explanation"].lower()
     forbidden = [
         "range(", "enumerate(", "break", "continue", "pass", "nested",
         "list comprehension", "dictionary", "function", "recursion", "library",
+        "class", "advanced algorithm",
         "append(",
     ]
     assert not any(term in content for term in forbidden)

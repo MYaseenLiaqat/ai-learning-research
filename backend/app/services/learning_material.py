@@ -375,11 +375,70 @@ LOOPS_MODULE_V050 = {
     ],
 }
 
+LEGACY_LOOPS_MODULE_V050 = LOOPS_MODULE_V050
+
+LOOPS_MODULE_V060 = {
+    "module_id": "loops",
+    "version": "v0.6.0",
+    "explanation": (
+        "# Lesson 1: Iterator variables and tracing\n\n"
+        "A `for` loop assigns one item at a time to an iterator variable. The iterator is the current item, not automatically a counter. Trace each iteration by recording the current item, condition, state before the update, action, and state after the update.\n\n"
+        "```python\n"
+        "signals = [\"yes\", \"no\", \"yes\"]\n"
+        "for signal in signals:\n"
+        "    print(signal)\n"
+        "```\n\n"
+        "# Lesson 2: Decompose the problem\n\n"
+        "Before writing code, ask: what does the result represent, what state is needed before iteration, what is the current item, what condition decides the action, which state variables change, and what remains after the loop? Use the framework `UNDERSTAND -> DECOMPOSE -> INITIALIZE -> ITERATE -> CHECK -> UPDATE -> RESULT`.\n\n"
+        "# Lesson 3: Common state patterns\n\n"
+        "A counter answers how many items qualify. Initialize it to 0 and add 1 for each match. An accumulator answers a total. Initialize it to 0 and add the qualifying value. A maximum tracks the largest value seen so far: compare the current item with the stored maximum and replace the stored maximum when the current item is larger.\n\n"
+        "For a longest streak, use multiple state variables. A current-streak variable tracks the run being processed; a best-streak variable tracks the longest run so far. With `if/else`, increase the current streak for a qualifying string and reset it otherwise, then update the best streak when needed.\n\n"
+        "| current item | condition | current state | best state |\n| --- | --- | --- | --- |\n| start | - | 0 | 0 |\n| yes | true | 1 | 1 |\n| yes | true | 2 | 2 |\n| no | false | 0 | 2 |\n\n"
+        "# Lesson 4: Solve unseen problems\n\n"
+        "Use a dry-run table before coding. Name every state variable, initialize it, process one iterator value at a time, apply the comparison or `if/else`, update only the relevant state, and read the final result after the loop. Practice should change contexts and values so learners apply patterns instead of memorizing code."
+    ),
+    "worked_example": {
+        "problem": "Trace a loop that identifies the largest value seen so far.",
+        "input": "values = [4, 9, 2]",
+        "reasoning": "Identify the maximum state, compare each current value, and update when the current value is larger.",
+        "solution": "result = values[0]\nfor value in values:\n    if value > result:\n        result = value",
+        "expected_result": 9,
+    },
+    "guided_practice": {
+        "problem": (
+            "Identify the state variables and fill the blanks for a longest `yes` streak.\n\n"
+            "```python\n"
+            "activity = [\"yes\", \"no\", \"yes\", \"yes\"]\n"
+            "current = ___\n"
+            "best = ___\n"
+            "for item in activity:\n"
+            "    if item == \"yes\":\n"
+            "        current ___ 1\n"
+            "    else:\n"
+            "        current = ___\n"
+            "```"
+        ),
+        "expected_result": 2,
+        "note": "Instructional practice, not a primary outcome.",
+    },
+    "mini_practice": {
+        "problem": "Choose whether an unseen problem needs a counter, accumulator, maximum, or multiple states.",
+        "example": "labels = [\"yes\", \"yes\", \"no\"]",
+        "hint": "State what the final result represents before choosing variables.",
+    },
+    "static_hints": [
+        "State the result in words before writing code.",
+        "List every state variable and its initialization.",
+        "Dry-run one item at a time and update only the state required by the pattern.",
+    ],
+}
+
 MODULE_REGISTRY = {
     "v0.2.0": LEGACY_LOOPS_MODULE_V020,
     "v0.3.0": LEGACY_LOOPS_MODULE_V030,
     "v0.4.0": LEGACY_LOOPS_MODULE_V040,
     "v0.5.0": LOOPS_MODULE_V050,
+    "v0.6.0": LOOPS_MODULE_V060,
 }
 
 

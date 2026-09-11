@@ -34,7 +34,7 @@ def test_explicit_start_sets_started_at(
     data = resp.json()
     assert data["started_at"] is not None
     assert data["expires_at"] is not None
-    assert data["module_version"] == "v0.5.0"
+    assert data["module_version"] == "v0.6.0"
 
     db_session.refresh(attempt)
     assert attempt.started_at is not None
@@ -50,7 +50,7 @@ def test_explicit_start_stores_module_version_v020(
     client.post(f"/learning/loops/start?learner_id={learner.id}")
 
     db_session.refresh(attempt)
-    assert attempt.module_version == "v0.5.0"
+    assert attempt.module_version == "v0.6.0"
 
 
 def test_second_explicit_start_does_not_reset(

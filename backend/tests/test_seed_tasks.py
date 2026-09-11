@@ -4,9 +4,9 @@ from scripts.seed import TASK_VERSION, seed
 from app.models import Task
 
 
-def test_seeded_tasks_use_version_040(db_session):
+def test_seeded_tasks_use_version_050(db_session):
     seed(db_session)
-    assert {t.version for t in db_session.query(Task).all()} == {"0.4.0"}
+    assert {t.version for t in db_session.query(Task).all()} == {"0.5.0"}
 
 
 def test_criterion_differs_from_delayed_and_remains_within_loop_construct(db_session):
@@ -15,13 +15,13 @@ def test_criterion_differs_from_delayed_and_remains_within_loop_construct(db_ses
     delayed_prompt = tasks["delayed"].prompt_text
     criterion_prompt = tasks["criterion"].prompt_text
 
-    assert "transactions" in criterion_prompt
+    assert "activity" in criterion_prompt
     assert "strictly greater than 1000" not in criterion_prompt
     assert criterion_prompt.startswith(
-        "The platform already provides a variable named `transactions` containing:"
+        "The platform already provides a variable named `activity` containing:"
     )
-    assert "at least 100" in criterion_prompt
-    assert "counter and an accumulator" in criterion_prompt
+    assert "longest consecutive" in criterion_prompt
+    assert "current-streak state" in criterion_prompt
     assert "platform already provides a variable named" in criterion_prompt
     assert "Do not redefine" in criterion_prompt
     assert "result" in criterion_prompt
@@ -33,7 +33,7 @@ def test_criterion_hidden_expected_values_remain_unchanged(db_session):
     seed(db_session)
     criterion = db_session.query(Task).filter_by(type="criterion").one()
     assert [case["expected"] for case in criterion.grading_spec["tests"]] == [
-        420, 0, 0, 100, 200, 201
+        3, 0, 0, 1, 2, 2
     ]
 
 
@@ -51,8 +51,8 @@ def test_loops_prompts_explicitly_forbid_redefining_provided_input(db_session):
         "supported": "temperatures",
         "immediate": "scores",
         "delayed": "ages",
-        "transfer": "prices",
-        "criterion": "transactions",
+        "transfer": "scores",
+        "criterion": "activity",
     }
     seed(db_session)
     tasks = db_session.query(Task).all()
