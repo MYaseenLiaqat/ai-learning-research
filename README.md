@@ -1,65 +1,63 @@
-# AI Learning Research Platform
+# AI Learning Research
 
-A research-oriented platform for studying how AI assistance affects programming learning, particularly students' ability to retain and transfer programming skills when working without AI.
+This repository contains a research instrument for studying how AI assistance
+during learning affects later unaided retention and transfer.
 
-## Research Question
+> **Research question:** How does AI assistance during learning affect
+> learners' subsequent unaided retention and transfer of the learned skill?
 
-> Does AI assistance change how well students retain and transfer programming skills when they later work without AI?
+The secondary question asks whether AI assistance changes the relationship
+between immediate independent performance and later unaided learning outcomes.
+Programming is the **initial experimental testbed**, not the scope of the
+research: programming gives the first study a structured setting with
+standardized tasks, objective automated assessment, controlled AI access, and
+reproducible conditions.
 
-The study focuses on the relationship between students' immediate independent programming performance and their subsequent unaided learning outcomes, particularly:
+## Study at a glance
 
-- Delayed retention
-- Transfer of programming knowledge and skills
+- Learners are randomly assigned to **No-AI** or **Controlled-AI**.
+- Both conditions receive the same standardized learning and task sequence.
+- The Controlled-AI tutor is learner-initiated and available only during
+  Supported learning.
+- Immediate, delayed, transfer, and criterion assessments are AI-free.
+- The current testbed teaches introductory Python `for`-loop problem solving.
+- The current runtime freezes protocol, module, task, prompt, provider/model,
+  interaction-cap, and timing provenance for reproducibility.
 
-## Research Motivation
+The current implementation is an internal content/feasibility pilot, not a
+confirmatory claim that AI improves learning.
 
-Generative AI can improve students' immediate ability to complete programming tasks. However, stronger performance during AI-assisted learning does not necessarily mean that the underlying skill has been learned.
+## Start here
 
-This project investigates that distinction by comparing learning under controlled AI-assisted and non-AI conditions and subsequently measuring performance without AI assistance.
+Read the main professor-facing document:
 
-The goal is not simply to build an AI tutor. The software is being developed as an experimental research platform whose features are driven by the study protocol.
+- [docs/RESEARCH.md](docs/RESEARCH.md) — current research design, intervention,
+  measurements, provenance, limitations, and implementation status.
+- [research/README.md](research/README.md) — map of active and historical
+  research specifications.
 
-## Current Research Design
-
-The initial experimental design considers:
-
-- A No-AI condition
-- A Controlled-AI condition
-- Immediate independent performance measurement
-- Delayed unaided performance measurement
-- Transfer measurement
-- Standardized programming tasks
-- Logged AI interactions
-- Reproducible grading
-
-The exact protocol is maintained separately in:
-
-`research/protocol_v0.1.md`
-
-Project boundaries and scope are documented in:
-
-`research/SCOPE.md`
-
-## Project Structure
+## Repository layout
 
 ```text
-AI-Learning-Research/
-│
-├── backend/
-│   ├── app/
-│   ├── tests/
-│   ├── scripts/
-│   └── requirements.txt
-│
-├── research/
-│   ├── protocol_v0.1.md
-│   └── SCOPE.md
-│
-├── frontend/
-│
-├── analysis/
-│
-├── docs/
-│
-├── .gitignore
-└── README.md
+backend/   FastAPI application, versioned services, seed data, and tests
+frontend/  participant-facing application
+research/  active research specifications and archived history
+docs/      professor-facing project documentation
+analysis/  analysis workspace
+```
+
+## Developer setup
+
+The backend is a Python application. From the repository root:
+
+```powershell
+cd backend
+pip install -r requirements.txt
+pytest
+uvicorn app.main:app --reload
+```
+
+Use a local `.env` for development configuration and never commit API keys,
+databases, participant exports, or virtual environments. See the backend
+configuration and the active research documents for current defaults and
+protocol boundaries.

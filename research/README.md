@@ -1,58 +1,42 @@
-# AI-Assisted Learning Research — Research Documentation Index
+# Research documentation map
 
-## Purpose
-This folder contains historical and current research specifications for the AI-assisted programming-learning study. The application is a research instrument, not a general learning platform. See `SCOPE.md`.
+[docs/RESEARCH.md](../docs/RESEARCH.md) is the main professor-facing research
+document. It describes the current design, implementation, intervention,
+measurements, provenance, limitations, and planned phases.
 
-## Current pilot source of truth
+## Document locations
 
-| Artifact | Current version | Source |
-|---|---:|---|
-| Study protocol | v0.4 | `protocol_v0.4.md` |
-| Loops learning module | v0.4.0 | `loops_learning_module_v0.4.md` + backend registry |
-| Loops task instrument | 0.4.0 | `loops_task_instrument_v0.4.0.md` + `backend/scripts/seed.py` |
-| AI tutor policy | v0.3 / prompt 0.3.0 | `ai_tutor_policy_v0.3.md` + backend registry |
-| Prerequisite screener | v0.3 | `loops_prerequisite_screener_v0.3.md` |
-| Pilot timing clarification | v0.3 | `pilot_protocol_clarification_v0.3.md` |
-| Instrument audit | v0.2 | `loops_instrument_audit_v0.2.md` |
-| Grader | 0.1.0 | backend grader implementation |
+- `docs/RESEARCH.md` — current integrated research design and project
+  documentation.
+- `research/` — current active research documentation and implementation
+  specifications.
+- `research/archive/` — historical or superseded versions retained for
+  traceability; their contents are not rewritten.
 
-Older files remain historical evidence and must not be rewritten to reflect later decisions.
+## Current authoritative documents
 
-## Protocol chronology
-- v0.1: `protocol_v0.1.md`
-- v0.2 stage: `research_design_v0.2.md`
-- v0.3 stage: `protocol_addendum_v0.3.md` plus v0.3 pilot clarifications
-- v0.4: `protocol_v0.4.md`
+| Document | Role |
+|---|---|
+| [protocol_v0.4.md](protocol_v0.4.md) | Current content-pilot protocol and analysis direction |
+| [loops_learning_module_v0.6.md](loops_learning_module_v0.6.md) | Current Python loops learning specification |
+| [loops_task_instrument_v0.5.0.md](loops_task_instrument_v0.5.0.md) | Current staged task and timing instrument |
+| [ai_tutor_policy_v0.6.md](ai_tutor_policy_v0.6.md) | Current Controlled-AI treatment policy |
+| [loops_prerequisite_screener_v0.3.md](loops_prerequisite_screener_v0.3.md) | Readiness and prerequisite screening |
+| [pilot_protocol_clarification_v0.3.md](pilot_protocol_clarification_v0.3.md) | Pilot timing and implementation clarification |
+| [loops_instrument_audit_v0.2.md](loops_instrument_audit_v0.2.md) | Current instrument audit record |
+| [SCOPE.md](SCOPE.md) | Explicit project boundary and excluded features |
+| [CHANGELOG.md](CHANGELOG.md) | Documentation and protocol change history |
 
-Separate v0.2/v0.3 protocol files are not fabricated because those stages were already represented by the artifacts above.
+The backend is the runtime authority for defaults and registries. In
+particular, the current configuration uses protocol `v0.4`, learning module
+`v0.6.0`, system prompt `0.6.0`, Groq model
+`llama-3.1-8b-instant`, an eight-interaction cap, and a 20-minute Supported
+phase. Seeded tasks use instrument version `0.5.0`; the grader reports version
+`0.1.0`.
 
-## Historical reconstruction policy
-Some runtime versions existed before matching Markdown specifications. Reconstructed files are explicitly labeled **Historical reconstruction** and must describe only behavior supported by repository history.
+## Version families
 
-## Independent version families
-Protocol, learning module, task instrument, system prompt, grader, and screener versions are independent. They do not need matching numbers.
-
-Current combination:
-- protocol v0.4
-- learning module v0.4.0
-- task instrument 0.4.0
-- system prompt 0.3.0
-- grader 0.1.0
-- screener v0.3
-
-## Participant-facing confidentiality
-Do not give participants the GitHub repository URL. The repository contains research hypotheses and grader implementation details.
-
-Before feasibility or confirmatory collection, participant-facing deployment must not expose researcher-only grader cases, system prompts, hypotheses, or condition-assignment details.
-
-## Data separation
-Keep development/smoke, content-pilot, feasibility-pilot, and confirmatory databases separate.
-
-Never commit:
-- `research.db` or backups
-- `.env` or API keys
-- virtual environments
-- identifiable participant exports
-
-## Status
-Current documentation target: protocol v0.4 content-pilot freeze.
+Protocol, learning module, task instrument, system prompt, grader, and screener
+versions are independent. They do not need matching numbers. Historical
+documents in `archive/` are evidence of earlier decisions and should not be
+rewritten to match current runtime behavior.

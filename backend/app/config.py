@@ -4,7 +4,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./research.db"
     study_protocol_version: str = "v0.4"
     learning_module_version: str = "v0.6.0"
-    system_prompt_version: str = "0.5.0"
+    system_prompt_version: str = "0.6.0"
     llm_provider: str = "groq"
     llm_base_url: str | None = None
     llm_api_key: str | None = None

@@ -8,7 +8,7 @@ Before changing code:
 
 1. inspect the existing backend
 2. inspect current tests
-3. inspect `research/protocol_v0.1.md`
+3. inspect `research/archive/protocol_v0.1.md`
 4. inspect the latest research-design document
 5. report any conflict instead of silently choosing a new research design
 

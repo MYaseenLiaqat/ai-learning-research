@@ -84,7 +84,7 @@ def make_learner(db_session):
             measurement_arm="full",
             study_protocol_version="v0.3",
             learning_module_version="v0.6.0",
-            system_prompt_version="0.5.0" if condition == "controlled_ai" else None,
+            system_prompt_version="0.6.0" if condition == "controlled_ai" else None,
             ai_provider="groq" if condition == "controlled_ai" else None,
             ai_model="fake-model" if condition == "controlled_ai" else None,
             ai_interaction_cap=8 if condition == "controlled_ai" else None,

@@ -3,7 +3,12 @@ from unittest.mock import patch
 
 from app.config import settings
 from app.models import AIInteraction, Attempt
-from app.routers.ai import SYSTEM_PROMPT_REGISTRY, SYSTEM_PROMPT_VERSION, get_system_prompt
+from app.routers.ai import (
+    SYSTEM_PROMPT_050,
+    SYSTEM_PROMPT_REGISTRY,
+    SYSTEM_PROMPT_VERSION,
+    get_system_prompt,
+)
 from app.services.learning_material import MODULE_REGISTRY
 from app.services.grader import GRADER_VERSION
 
@@ -34,7 +39,7 @@ def test_new_learner_freezes_provenance(client, db_session, monkeypatch):
     learner = response.json()
     assert learner["study_protocol_version"] == "v0.4"
     assert learner["learning_module_version"] == "v0.6.0"
-    assert learner["system_prompt_version"] == SYSTEM_PROMPT_VERSION == "0.5.0"
+    assert learner["system_prompt_version"] == SYSTEM_PROMPT_VERSION == "0.6.0"
     assert learner["ai_provider"] == "groq"
     assert learner["ai_model"] == "frozen-model"
     assert learner["ai_interaction_cap"] == 8
@@ -204,6 +209,23 @@ def test_historical_learner_with_020_uses_020_prompt(make_learner):
     learner = make_learner(condition="controlled_ai")
     learner.system_prompt_version = "0.2.0"
     assert get_system_prompt(learner.system_prompt_version) == SYSTEM_PROMPT_REGISTRY["0.2.0"]
+
+
+def test_historical_learner_with_050_sends_050_prompt_to_provider(
+    client, make_learner, make_task, make_attempt, monkeypatch
+):
+    configure_llm(monkeypatch)
+    learner = make_learner(condition="controlled_ai")
+    learner.system_prompt_version = "0.5.0"
+    task = make_task("supported")
+    attempt = make_attempt(learner, task, started_at=datetime.utcnow())
+    with patch("app.routers.ai.httpx.post", return_value=fake_response()) as request:
+        response = client.post("/ai/chat", json={"attempt_id": attempt.id, "message": "help"})
+    assert response.status_code == 200
+    assert request.call_args.kwargs["json"]["messages"][0] == {
+        "role": "system",
+        "content": SYSTEM_PROMPT_050,
+    }
 
 
 def test_unknown_registry_versions_fail_closed(client, make_learner, make_task, make_attempt, monkeypatch):
