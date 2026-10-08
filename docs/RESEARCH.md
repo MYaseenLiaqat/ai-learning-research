@@ -119,7 +119,7 @@ learning only.
 
 ```mermaid
 flowchart LR
-    A[Eligibility<br/>(research-protocol procedure)] --> B[Random assignment]
+    A["Eligibility (research-protocol procedure)"] --> B["Random assignment"]
     B --> C[No-AI / Controlled-AI]
     C --> D[Standardized learning]
     D --> E[Immediate unaided assessment]
