@@ -29,7 +29,7 @@ confirmatory claim that AI improves learning.
 
 ## Start here
 
-Read the main documents:
+Primary research documentation:
 
 - [docs/RESEARCH.md](docs/RESEARCH.md) — current research design, intervention,
   measurements, provenance, limitations, and implementation status.
@@ -61,3 +61,4 @@ Use a local `.env` for development configuration and never commit API keys,
 databases, participant exports, or virtual environments. See the backend
 configuration and the active research documents for current defaults and
 protocol boundaries.
+

@@ -1,9 +1,9 @@
 # AI-Assisted Learning — Research Design & Project Documentation
 
-This is the main professor-facing description of the project. It describes the
-current repository implementation and should be read with the active documents
-listed in [research/README.md](../research/README.md). Historical specifications
-remain available in [research/archive/](../research/archive/).
+This document presents the project for a professor-facing audience. It
+summarizes the current implementation and identifies the active documents in
+[research/README.md](../research/README.md). Historical specifications remain
+available in [research/archive/](../research/archive/).
 
 ## 1. Abstract
 
@@ -299,7 +299,7 @@ Implemented components include the FastAPI backend, learner-level random
 condition assignment, staged attempts, frozen provenance, Supported-session
 expiry, learner-initiated Controlled-AI access, interaction logging, versioned
 learning material and prompts, seeded tasks, and execution-based grading.
-The current repository describes a content/feasibility pilot and is not a
+The current implementation is an internal content/feasibility pilot, not a
 publication-ready confirmatory platform.
 
 ## 22. Planned Research Phases
@@ -323,8 +323,8 @@ material.
 
 ## 24. References
 
-This repository does not contain an external bibliography. The authoritative
-project references are the versioned internal documents in
+No external bibliography is included. Project references are maintained as
+versioned internal documents in
 [research/README.md](../research/README.md), especially
 [protocol_v0.4.md](../research/protocol_v0.4.md),
 [loops_learning_module_v0.6.md](../research/loops_learning_module_v0.6.md),

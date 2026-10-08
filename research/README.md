@@ -1,8 +1,9 @@
 # Research documentation map
 
-[docs/RESEARCH.md](../docs/RESEARCH.md) is the main professor-facing research
-document. It describes the current design, implementation, intervention,
-measurements, provenance, limitations, and planned phases.
+The main professor-facing research document is
+[docs/RESEARCH.md](../docs/RESEARCH.md). It summarizes the current design,
+implementation, intervention, measurements, provenance, limitations, and
+planned phases.
 
 ## Document locations
 
