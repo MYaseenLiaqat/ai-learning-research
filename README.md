@@ -29,7 +29,7 @@ confirmatory claim that AI improves learning.
 
 ## Start here
 
-Read the main professor-facing document:
+Read the main documents:
 
 - [docs/RESEARCH.md](docs/RESEARCH.md) — current research design, intervention,
   measurements, provenance, limitations, and implementation status.
