@@ -57,8 +57,4 @@ pytest
 uvicorn app.main:app --reload
 ```
 
-Use a local `.env` for development configuration and never commit API keys,
-databases, participant exports, or virtual environments. See the backend
-configuration and the active research documents for current defaults and
-protocol boundaries.
-
+Local settings are stored in .env. API keys, databases, participant exports, and virtual environments are kept out of version control.
