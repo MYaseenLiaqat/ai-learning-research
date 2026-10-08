@@ -42,7 +42,7 @@ Read the main documents:
 backend/   FastAPI application, versioned services, seed data, and tests
 frontend/  participant-facing application
 research/  active research specifications and archived history
-docs/      professor-facing project documentation
+docs/      project documentation
 analysis/  analysis workspace
 ```
 
